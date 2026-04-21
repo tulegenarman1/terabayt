@@ -124,9 +124,8 @@ export default function Home() {
             transition={{ delay: 0.4 }}
             className="text-5xl md:text-7xl font-black mb-6 leading-tight tracking-tight"
           >
-            Техника <span className="text-emerald-400">премиум</span> класса
-            <br />
-            <span className="text-2xl md:text-4xl text-zinc-400 font-bold">с гарантией и лучшим сервисом</span>
+            Terabayt.kz — интернет-магазин <br />
+            <span className="text-emerald-400">ноутбуков</span> в Казахстане
           </motion.h1>
 
           <motion.p
@@ -352,6 +351,20 @@ export default function Home() {
                 </AnimatePresence>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SEO SECTION */}
+      <section className="py-16 bg-zinc-950 border-t border-zinc-900">
+        <div className="container">
+          <div className="max-w-4xl mx-auto text-center space-y-6">
+            <h2 className="text-3xl md:text-5xl font-black text-white">
+              О магазине <span className="text-emerald-400">Terabayt.kz</span>
+            </h2>
+            <p className="text-zinc-400 text-base md:text-lg leading-relaxed max-w-3xl mx-auto">
+              Мы верим, что качественная техника должна быть доступной. В Terabayt.kz мы не просто продаем ноутбуки и смартфоны — мы помогаем вам найти надежного помощника для работы, творчества и развлечений. Наша команда обеспечивает профессиональную поддержку, официальную гарантию и быструю доставку в любую точку Казахстана, чтобы вы могли наслаждаться покупкой без лишних забот.
+            </p>
           </div>
         </div>
       </section>
