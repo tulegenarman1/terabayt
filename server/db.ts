@@ -10,16 +10,115 @@ let _db: ReturnType<typeof drizzle> | null = null;
 export async function getDb() {
   if (!_db) {
     try {
+      const dbPath = "sqlite.db";
       const client = createClient({
-        url: "file:sqlite.db",
+        url: `file:${dbPath}`,
       });
       _db = drizzle(client);
+      console.log(`[Database] Connected to ${dbPath}`);
+      
+      // Attempt to sync schema manually on connection
+      await syncSchemaManually(client);
+      
     } catch (error) {
-      console.warn("[Database] Failed to connect:", error);
+      console.error("[Database] Failed to connect:", error);
       _db = null;
     }
   }
   return _db;
+}
+
+async function syncSchemaManually(client: any) {
+  try {
+    const tables = [
+      `CREATE TABLE IF NOT EXISTS "brands" (
+        "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "name" text NOT NULL,
+        "logo" text,
+        "description" text,
+        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+      );`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "brands_name_unique" ON "brands" ("name");`,
+      `CREATE TABLE IF NOT EXISTS "categories" (
+        "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "name" text NOT NULL,
+        "slug" text NOT NULL,
+        "description" text,
+        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+      );`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "categories_name_unique" ON "categories" ("name");`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "categories_slug_unique" ON "categories" ("slug");`,
+      `CREATE TABLE IF NOT EXISTS "products" (
+        "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "categoryId" integer NOT NULL,
+        "brandId" integer NOT NULL DEFAULT 0,
+        "name" text NOT NULL,
+        "brand" text NOT NULL,
+        "model" text NOT NULL,
+        "price" real NOT NULL,
+        "discountPrice" real,
+        "description" text,
+        "specs" text,
+        "images" text,
+        "videoUrl" text,
+        "availability" text DEFAULT 'in_stock' NOT NULL,
+        "kaspiLink" text,
+        "featured" integer DEFAULT 0 NOT NULL,
+        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+      );`,
+      `CREATE TABLE IF NOT EXISTS "users" (
+        "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "openId" text NOT NULL,
+        "name" text,
+        "email" text,
+        "loginMethod" text,
+        "role" text DEFAULT 'user' NOT NULL,
+        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
+        "lastSignedIn" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+      );`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "users_openId_unique" ON "users" ("openId");`,
+      `CREATE TABLE IF NOT EXISTS "cartItems" (
+        "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "productId" integer NOT NULL,
+        "quantity" integer DEFAULT 1 NOT NULL,
+        "sessionId" text NOT NULL,
+        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+      );`,
+      `CREATE TABLE IF NOT EXISTS "reviews" (
+        "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "productId" integer NOT NULL,
+        "rating" integer NOT NULL,
+        "title" text NOT NULL,
+        "comment" text,
+        "authorName" text NOT NULL,
+        "authorEmail" text,
+        "verified" integer DEFAULT 0 NOT NULL,
+        "helpful" integer DEFAULT 0 NOT NULL,
+        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+      );`
+    ];
+
+    for (const sql of tables) {
+      await client.execute(sql);
+    }
+    
+    // Add missing brandId column if needed
+    const info = await client.execute("PRAGMA table_info(products)");
+    const hasBrandId = info.rows.some((r: any) => r.name === "brandId");
+    if (!hasBrandId) {
+      await client.execute("ALTER TABLE products ADD COLUMN brandId integer NOT NULL DEFAULT 0");
+    }
+    
+    console.log("[Database] Schema sync successful");
+  } catch (e) {
+    console.error("[Database] Schema sync failed:", e);
+  }
 }
 
 export async function upsertUser(user: InsertUser): Promise<void> {
@@ -89,7 +188,15 @@ export async function getBrandById(id: number) {
 export async function createBrand(data: InsertBrand) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  return db.insert(brands).values(data);
+  
+  // Explicitly extract fields and provide defaults to avoid 'undefined'
+  const values: any = {
+    name: data.name || "",
+    logo: data.logo || null,
+    description: data.description || null,
+  };
+  
+  return db.insert(brands).values(values);
 }
 
 export async function updateBrand(id: number, data: Partial<InsertBrand>) {
@@ -153,8 +260,26 @@ export async function getFeaturedProducts() {
 export async function createProduct(data: InsertProduct) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(products).values(data);
-  return result;
+  
+  // Extract fields and provide defaults to avoid 'undefined' and 'null' for ID
+  const values: any = {
+    categoryId: data.categoryId,
+    brandId: data.brandId,
+    name: data.name || "",
+    brand: data.brand || "",
+    model: data.model || "Standard",
+    price: data.price,
+    discountPrice: data.discountPrice || null,
+    description: data.description || null,
+    specs: data.specs || null,
+    images: data.images || [],
+    videoUrl: data.videoUrl || null,
+    availability: data.availability || "in_stock",
+    kaspiLink: data.kaspiLink || null,
+    featured: data.featured ?? false,
+  };
+  
+  return db.insert(products).values(values);
 }
 
 export async function updateProduct(id: number, data: Partial<InsertProduct>) {
@@ -186,7 +311,14 @@ export async function getCategoryById(id: number) {
 export async function createCategory(data: InsertCategory) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  return db.insert(categories).values(data);
+  
+  const values: any = {
+    name: data.name || "",
+    slug: data.slug || "",
+    description: data.description || null,
+  };
+  
+  return db.insert(categories).values(values);
 }
 
 export async function updateCategory(id: number, data: Partial<InsertCategory>) {
@@ -211,7 +343,14 @@ export async function getCartItems(sessionId: string) {
 export async function addToCart(data: InsertCartItem) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  return db.insert(cartItems).values(data);
+  
+  const values: any = {
+    productId: data.productId,
+    quantity: data.quantity ?? 1,
+    sessionId: data.sessionId,
+  };
+  
+  return db.insert(cartItems).values(values);
 }
 
 export async function updateCartItem(id: number, quantity: number) {
@@ -242,7 +381,19 @@ export async function getReviewsByProductId(productId: number) {
 export async function createReview(review: InsertReview) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  return db.insert(reviews).values(review);
+  
+  const values: any = {
+    productId: review.productId,
+    rating: review.rating,
+    title: review.title || "",
+    comment: review.comment || null,
+    authorName: review.authorName || "Anonymous",
+    authorEmail: review.authorEmail || null,
+    verified: review.verified ?? false,
+    helpful: review.helpful ?? 0,
+  };
+  
+  return db.insert(reviews).values(values);
 }
 
 export async function getAverageRating(productId: number) {

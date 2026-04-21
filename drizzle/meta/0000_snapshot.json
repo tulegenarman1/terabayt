@@ -42,7 +42,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -50,7 +50,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         }
       },
       "indexes": {},
@@ -96,7 +96,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -104,7 +104,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         }
       },
       "indexes": {
@@ -237,7 +237,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -245,7 +245,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         }
       },
       "indexes": {},
@@ -328,7 +328,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -336,7 +336,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         }
       },
       "indexes": {},
@@ -397,7 +397,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         },
         "updatedAt": {
           "name": "updatedAt",
@@ -405,7 +405,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         },
         "lastSignedIn": {
           "name": "lastSignedIn",
@@ -413,7 +413,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "(cast((julianday('now') - 2440587.5)*86400000 as integer))"
+          "default": "(cast((julianday('now') - 2440587.5)*86400 as integer))"
         }
       },
       "indexes": {
