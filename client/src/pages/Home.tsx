@@ -4,8 +4,7 @@ import {
   Smartphone, Zap, Award, Phone, MapPin, Instagram, 
   ChevronLeft, ChevronRight, Shield, Truck, Headphones,
   Wallet, CheckCircle2, MessageCircle, ArrowRight,
-  Plus, Minus, Star, Laptop, Printer, X, Sparkles,
-  Gamepad2, Briefcase, Paintbrush, Battery, BatteryFull
+  Plus, Minus, Star, Laptop, Printer, X, Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useMemo } from "react";
@@ -34,8 +33,6 @@ const FAQ = [
 
 export default function Home() {
   const [, navigate] = useLocation();
-  const [showQuiz, setShowForm] = useState(false); // Using same name but let's be descriptive
-  const [quizOpen, setQuizOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"hits" | "new" | "sale">("hits");
 
   const { data: allProducts = [] } = trpc.products.list.useQuery();
@@ -146,15 +143,6 @@ export default function Home() {
             >
               Перейти в каталог
               <ArrowRight className="w-5 h-5" />
-            </Button>
-            <Button
-              onClick={() => setQuizOpen(true)}
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto border-emerald-500/50 hover:bg-emerald-500/10 text-white font-bold h-14 px-8 text-lg rounded-2xl gap-2"
-            >
-              <Sparkles className="w-5 h-5 text-emerald-400" />
-              Подобрать ноутбук
             </Button>
           </motion.div>
         </div>
@@ -291,13 +279,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Quiz Modal */}
-      <AnimatePresence>
-        {quizOpen && (
-          <QuizModal products={allProducts} onClose={() => setQuizOpen(false)} />
-        )}
-      </AnimatePresence>
-
       {/* FAQ SECTION */}
       <section className="py-24 relative bg-zinc-950/50 border-y border-zinc-900">
         <div className="container relative z-10">
@@ -350,172 +331,5 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  );
-}
-
-function QuizModal({ products, onClose }: { products: any[]; onClose: () => void }) {
-  const [step, setStep] = useState(1);
-  const [answers, setAnswers] = useState<any>({});
-  const [, navigate] = useLocation();
-
-  const questions = [
-    {
-      id: "purpose",
-      title: "Для чего вам нужен ноутбук?",
-      options: [
-        { label: "Игры", value: "gaming", icon: Gamepad2 },
-        { label: "Работа / Учеба", value: "work", icon: Briefcase },
-        { label: "Дизайн / Монтаж", value: "design", icon: Paintbrush },
-      ]
-    },
-    {
-      id: "budget",
-      title: "Какой ваш примерный бюджет?",
-      options: [
-        { label: "До 300 000 ₸", value: "low" },
-        { label: "300 000 - 600 000 ₸", value: "mid" },
-        { label: "Свыше 600 000 ₸", value: "high" },
-      ]
-    },
-    {
-      id: "autonomy",
-      title: "Важна ли автономность (время работы)?",
-      options: [
-        { label: "Да, очень важна", value: "yes", icon: BatteryFull },
-        { label: "Нет, будет стоять на зарядке", value: "no", icon: Battery },
-      ]
-    }
-  ];
-
-  const results = useMemo(() => {
-    if (step !== 4) return [];
-    
-    // Simple logic to filter laptops
-    let filtered = products.filter(p => p.categoryId === 1); // Only laptops
-    
-    // Budget filter
-    if (answers.budget === "low") filtered = filtered.filter(p => p.price < 300000);
-    if (answers.budget === "mid") filtered = filtered.filter(p => p.price >= 300000 && p.price <= 600000);
-    if (answers.budget === "high") filtered = filtered.filter(p => p.price > 600000);
-
-    // Purpose filter (simple brand/model matching for demo)
-    if (answers.purpose === "gaming") {
-      filtered = filtered.sort((a, b) => (b.specs?.gpu ? 1 : -1));
-    }
-
-    return filtered.slice(0, 3);
-  }, [step, answers, products]);
-
-  const handleAnswer = (val: string) => {
-    setAnswers({ ...answers, [questions[step - 1].id]: val });
-    setStep(step + 1);
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
-    >
-      <motion.div
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        className="bg-zinc-950 border border-emerald-500/30 w-full max-w-2xl rounded-[2.5rem] overflow-hidden relative"
-      >
-        <button 
-          onClick={onClose}
-          className="absolute top-6 right-6 p-2 text-zinc-500 hover:text-white hover:bg-white/5 rounded-full transition-all"
-        >
-          <X className="w-6 h-6" />
-        </button>
-
-        <div className="p-8 md:p-12">
-          {step <= 3 ? (
-            <div className="space-y-8">
-              <div className="space-y-2">
-                <p className="text-emerald-400 font-bold uppercase tracking-widest text-sm">Шаг {step} из 3</p>
-                <h2 className="text-3xl md:text-4xl font-black">{questions[step - 1].title}</h2>
-              </div>
-
-              <div className="grid gap-4">
-                {questions[step - 1].options.map((opt: any) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => handleAnswer(opt.value)}
-                    className="group flex items-center gap-4 p-6 bg-black border border-zinc-800 hover:border-emerald-500/50 rounded-2xl transition-all text-left"
-                  >
-                    {opt.icon && (
-                      <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
-                        <opt.icon className="w-6 h-6 text-emerald-400" />
-                      </div>
-                    )}
-                    <span className="text-xl font-bold">{opt.label}</span>
-                    <ArrowRight className="w-5 h-5 ml-auto opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-emerald-400" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-8 text-center">
-              <div className="space-y-2">
-                <Sparkles className="w-12 h-12 text-emerald-400 mx-auto mb-4" />
-                <h2 className="text-3xl md:text-4xl font-black">Мы подобрали <span className="text-emerald-400">лучшие варианты</span></h2>
-                <p className="text-zinc-500">Основываясь на ваших ответах, эти модели подойдут вам лучше всего</p>
-              </div>
-
-              <div className="grid sm:grid-cols-3 gap-4">
-                {results.length > 0 ? results.map((p) => (
-                  <div 
-                    key={p.id}
-                    onClick={() => {
-                      navigate(`/product/${p.id}`);
-                      onClose();
-                    }}
-                    className="bg-black border border-zinc-800 rounded-2xl p-4 cursor-pointer hover:border-emerald-500/50 transition-all group"
-                  >
-                    <div className="aspect-square bg-zinc-900 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
-                      {p.images?.[0] ? (
-                        <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <Laptop className="w-8 h-8 text-zinc-700" />
-                      )}
-                    </div>
-                    <p className="font-bold text-sm line-clamp-2 mb-1 group-hover:text-emerald-400 transition-colors">{p.name}</p>
-                    <p className="text-emerald-400 font-black text-sm">{Number(p.price).toLocaleString()} ₸</p>
-                  </div>
-                )) : (
-                  <div className="col-span-full py-8">
-                    <p className="text-zinc-500">К сожалению, под ваш бюджет пока нет товаров. Попробуйте выбрать другой диапазон!</p>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-4">
-                <Button
-                  onClick={() => {
-                    setStep(1);
-                    setAnswers({});
-                  }}
-                  variant="outline"
-                  className="flex-1 border-zinc-800 text-white rounded-2xl h-12"
-                >
-                  Пройти заново
-                </Button>
-                <Button
-                  onClick={() => {
-                    navigate("/catalog");
-                    onClose();
-                  }}
-                  className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-2xl h-12"
-                >
-                  В каталог
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </motion.div>
-    </motion.div>
   );
 }
