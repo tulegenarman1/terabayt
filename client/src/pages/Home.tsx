@@ -4,7 +4,7 @@ import {
   Smartphone, Zap, Award, Phone, MapPin, Instagram, 
   ChevronLeft, ChevronRight, Shield, Truck, Headphones,
   Wallet, CheckCircle2, MessageCircle, ArrowRight,
-  Plus, Minus, Star, Laptop, Printer, X, Sparkles
+  Plus, Minus, Star, Laptop, Printer, X, Sparkles, ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useMemo } from "react";
@@ -34,6 +34,7 @@ const FAQ = [
 export default function Home() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"hits" | "new" | "sale">("hits");
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const { data: allProducts = [] } = trpc.products.list.useQuery();
 
@@ -67,6 +68,14 @@ export default function Home() {
           </motion.div>
 
           <div className="flex items-center gap-2 md:gap-6">
+            <a
+              href="https://2gis.kz/almaty/geo/9430047375008939/76.857766,43.206241"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs md:text-sm text-zinc-400 hover:text-emerald-400 transition-colors font-bold"
+            >
+              Адрес
+            </a>
             <button
               onClick={() => navigate("/catalog")}
               className="text-sm md:text-base text-zinc-300 hover:text-emerald-400 transition-colors"
@@ -300,15 +309,47 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-black border border-zinc-800 rounded-2xl p-6 md:p-8"
+                className={`bg-black border transition-all duration-300 rounded-2xl overflow-hidden ${
+                  openFaq === i ? "border-emerald-500/50 shadow-lg shadow-emerald-500/5" : "border-zinc-800"
+                }`}
               >
-                <h3 className="text-xl font-bold mb-3 flex items-center gap-3 text-emerald-400">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-sm font-black">?</div>
-                  {item.q}
-                </h3>
-                <p className="text-zinc-400 leading-relaxed pl-11">
-                  {item.a}
-                </p>
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between p-6 md:p-8 text-left"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black transition-colors ${
+                      openFaq === i ? "bg-emerald-500 text-black" : "bg-emerald-500/10 text-emerald-400"
+                    }`}>
+                      {i + 1}
+                    </div>
+                    <h3 className={`text-xl font-bold transition-colors ${
+                      openFaq === i ? "text-white" : "text-zinc-300"
+                    }`}>
+                      {item.q}
+                    </h3>
+                  </div>
+                  <ChevronDown className={`w-6 h-6 text-zinc-500 transition-transform duration-300 ${
+                    openFaq === i ? "rotate-180 text-emerald-400" : ""
+                  }`} />
+                </button>
+                
+                <AnimatePresence>
+                  {openFaq === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      <div className="px-6 md:px-8 pb-8 pt-0 ml-14">
+                        <p className="text-zinc-400 leading-relaxed text-lg">
+                          {item.a}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ))}
           </div>
@@ -318,14 +359,79 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-20 border-t border-zinc-900 bg-black">
         <div className="container">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
-            <div className="flex items-center gap-3">
-              <img src={LOGO_URL} alt="Terabayt.kz" className="w-10 h-10 rounded-lg object-cover" />
-              <span className="text-xl font-bold tracking-tight">Terabayt<span className="text-emerald-400">.kz</span></span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <img src={LOGO_URL} alt="Terabayt.kz" className="w-12 h-12 rounded-xl object-cover ring-2 ring-emerald-500/20" />
+                <span className="text-2xl font-bold tracking-tight">Terabayt<span className="text-emerald-400">.kz</span></span>
+              </div>
+              <p className="text-zinc-500 leading-relaxed">
+                Ваш надежный партнер в мире премиальной техники. 
+                Лучшие ноутбуки, смартфоны и сервис в Казахстане.
+              </p>
             </div>
-            <div className="flex gap-6 text-zinc-500 text-sm">
-              <p>© 2026 Terabayt.kz. Все права защищены.</p>
-              <a href="https://wa.me/77072984386" className="hover:text-emerald-400 transition-colors">WhatsApp</a>
+
+            <div className="space-y-6">
+              <h4 className="text-lg font-bold text-white uppercase tracking-wider">Контакты</h4>
+              <ul className="space-y-4">
+                <li>
+                  <a 
+                    href="https://2gis.kz/almaty/geo/9430047375008939/76.857766,43.206241" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-3 group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 transition-colors">
+                      <MapPin className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">Улица Сауранбаева, 5</p>
+                      <p className="text-xs text-zinc-500">Открыть в 2GIS</p>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://wa.me/77072984386" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 transition-colors">
+                      <MessageCircle className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">+7 707 298 43 86</p>
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div className="space-y-6">
+              <h4 className="text-lg font-bold text-white uppercase tracking-wider">Соцсети</h4>
+              <div className="flex flex-col gap-4">
+                <a 
+                  href="https://www.instagram.com/terabayt.kz_aksu?igsh=MThhMHVxMTdwdjkzNg==" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 group"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-zinc-900 flex items-center justify-center hover:bg-emerald-500/10 hover:text-emerald-400 transition-all group">
+                    <Instagram className="w-6 h-6 text-zinc-400 group-hover:text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">terabayt.kz_aksu</p>
+                    <p className="text-xs text-zinc-500">Instagram</p>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-zinc-500 text-sm">© 2026 Terabayt.kz. Все права защищены.</p>
+            <div className="flex gap-6">
+              <button onClick={() => navigate("/catalog")} className="text-sm text-zinc-500 hover:text-emerald-400 transition-colors">Каталог</button>
+              <a href="https://wa.me/77072984386" className="text-sm text-zinc-500 hover:text-emerald-400 transition-colors">Помощь</a>
             </div>
           </div>
         </div>
