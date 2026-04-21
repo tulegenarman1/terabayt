@@ -1,5 +1,5 @@
 import { integer, sqliteTable, text, real } from "drizzle-orm/sqlite-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 
 /**
  * Core user table backing auth flow.
@@ -11,9 +11,9 @@ export const users = sqliteTable("users", {
   email: text("email"),
   loginMethod: text("loginMethod"),
   role: text("role", { enum: ["user", "admin"] }).default("user").notNull(),
-  createdAt: integer("createdAt", { mode: 'timestamp' }).defaultNow().notNull(),
-  updatedAt: integer("updatedAt", { mode: 'timestamp' }).defaultNow().notNull(),
-  lastSignedIn: integer("lastSignedIn", { mode: 'timestamp' }).defaultNow().notNull(),
+  createdAt: integer("createdAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
+  updatedAt: integer("updatedAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
+  lastSignedIn: integer("lastSignedIn", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
 });
 
 export type User = typeof users.$inferSelect;
@@ -24,8 +24,8 @@ export const categories = sqliteTable("categories", {
   name: text("name").notNull().unique(),
   slug: text("slug").notNull().unique(),
   description: text("description"),
-  createdAt: integer("createdAt", { mode: 'timestamp' }).defaultNow().notNull(),
-  updatedAt: integer("updatedAt", { mode: 'timestamp' }).defaultNow().notNull(),
+  createdAt: integer("createdAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
+  updatedAt: integer("updatedAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
 });
 
 export type Category = typeof categories.$inferSelect;
@@ -36,8 +36,8 @@ export const brands = sqliteTable("brands", {
   name: text("name").notNull().unique(),
   logo: text("logo"), // URL to the logo image
   description: text("description"),
-  createdAt: integer("createdAt", { mode: 'timestamp' }).defaultNow().notNull(),
-  updatedAt: integer("updatedAt", { mode: 'timestamp' }).defaultNow().notNull(),
+  createdAt: integer("createdAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
+  updatedAt: integer("updatedAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
 });
 
 export type Brand = typeof brands.$inferSelect;
@@ -67,8 +67,8 @@ export const products = sqliteTable("products", {
   availability: text("availability", { enum: ["in_stock", "out_of_stock", "coming_soon"] }).default("in_stock").notNull(),
   kaspiLink: text("kaspiLink"),
   featured: integer("featured", { mode: 'boolean' }).default(false).notNull(),
-  createdAt: integer("createdAt", { mode: 'timestamp' }).defaultNow().notNull(),
-  updatedAt: integer("updatedAt", { mode: 'timestamp' }).defaultNow().notNull(),
+  createdAt: integer("createdAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
+  updatedAt: integer("updatedAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
 });
 
 export type Product = typeof products.$inferSelect;
@@ -79,8 +79,8 @@ export const cartItems = sqliteTable("cartItems", {
   productId: integer("productId").notNull(),
   quantity: integer("quantity").default(1).notNull(),
   sessionId: text("sessionId").notNull(),
-  createdAt: integer("createdAt", { mode: 'timestamp' }).defaultNow().notNull(),
-  updatedAt: integer("updatedAt", { mode: 'timestamp' }).defaultNow().notNull(),
+  createdAt: integer("createdAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
+  updatedAt: integer("updatedAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
 });
 
 export type CartItem = typeof cartItems.$inferSelect;
@@ -125,8 +125,8 @@ export const reviews = sqliteTable("reviews", {
   authorEmail: text("authorEmail"),
   verified: integer("verified", { mode: 'boolean' }).default(false).notNull(),
   helpful: integer("helpful").default(0).notNull(),
-  createdAt: integer("createdAt", { mode: 'timestamp' }).defaultNow().notNull(),
-  updatedAt: integer("updatedAt", { mode: 'timestamp' }).defaultNow().notNull(),
+  createdAt: integer("createdAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
+  updatedAt: integer("updatedAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
 });
 
 export type Review = typeof reviews.$inferSelect;

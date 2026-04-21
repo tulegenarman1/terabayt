@@ -36,8 +36,8 @@ async function syncSchemaManually(client: any) {
         "name" text NOT NULL,
         "logo" text,
         "description" text,
-        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
-        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+        "createdAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL
       );`,
       `CREATE UNIQUE INDEX IF NOT EXISTS "brands_name_unique" ON "brands" ("name");`,
       `CREATE TABLE IF NOT EXISTS "categories" (
@@ -45,8 +45,8 @@ async function syncSchemaManually(client: any) {
         "name" text NOT NULL,
         "slug" text NOT NULL,
         "description" text,
-        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
-        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+        "createdAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL
       );`,
       `CREATE UNIQUE INDEX IF NOT EXISTS "categories_name_unique" ON "categories" ("name");`,
       `CREATE UNIQUE INDEX IF NOT EXISTS "categories_slug_unique" ON "categories" ("slug");`,
@@ -66,8 +66,8 @@ async function syncSchemaManually(client: any) {
         "availability" text DEFAULT 'in_stock' NOT NULL,
         "kaspiLink" text,
         "featured" integer DEFAULT 0 NOT NULL,
-        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
-        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+        "createdAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL
       );`,
       `CREATE TABLE IF NOT EXISTS "users" (
         "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -76,9 +76,9 @@ async function syncSchemaManually(client: any) {
         "email" text,
         "loginMethod" text,
         "role" text DEFAULT 'user' NOT NULL,
-        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
-        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
-        "lastSignedIn" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+        "createdAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL,
+        "lastSignedIn" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL
       );`,
       `CREATE UNIQUE INDEX IF NOT EXISTS "users_openId_unique" ON "users" ("openId");`,
       `CREATE TABLE IF NOT EXISTS "cartItems" (
@@ -86,8 +86,8 @@ async function syncSchemaManually(client: any) {
         "productId" integer NOT NULL,
         "quantity" integer DEFAULT 1 NOT NULL,
         "sessionId" text NOT NULL,
-        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
-        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+        "createdAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL
       );`,
       `CREATE TABLE IF NOT EXISTS "reviews" (
         "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
@@ -99,8 +99,8 @@ async function syncSchemaManually(client: any) {
         "authorEmail" text,
         "verified" integer DEFAULT 0 NOT NULL,
         "helpful" integer DEFAULT 0 NOT NULL,
-        "createdAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL,
-        "updatedAt" integer DEFAULT (cast((julianday('now') - 2440587.5)*86400 as integer)) NOT NULL
+        "createdAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL,
+        "updatedAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL
       );`
     ];
 
@@ -114,8 +114,22 @@ async function syncSchemaManually(client: any) {
     if (!hasBrandId) {
       await client.execute("ALTER TABLE products ADD COLUMN brandId integer NOT NULL DEFAULT 0");
     }
+
+    // DATA FIX: Fix any timestamps that are in milliseconds (13 digits) to seconds (10 digits)
+    const tablesToFix = ["products", "brands", "categories", "users", "cartItems", "reviews"];
+    for (const table of tablesToFix) {
+      const columns = await client.execute(`PRAGMA table_info(${table})`);
+      const timeCols = columns.rows.filter((r: any) => 
+        r.name === "createdAt" || r.name === "updatedAt" || r.name === "lastSignedIn"
+      ).map((r: any) => r.name);
+      
+      for (const col of timeCols) {
+        // Divide by 1000 if > 10^11
+        await client.execute(`UPDATE ${table} SET ${col} = ${col} / 1000 WHERE ${col} > 10000000000`);
+      }
+    }
     
-    console.log("[Database] Schema sync successful");
+    console.log("[Database] Schema sync and data fix successful");
   } catch (e) {
     console.error("[Database] Schema sync failed:", e);
   }
@@ -189,11 +203,12 @@ export async function createBrand(data: InsertBrand) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // Explicitly extract fields and provide defaults to avoid 'undefined'
   const values: any = {
     name: data.name || "",
     logo: data.logo || null,
     description: data.description || null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
   
   return db.insert(brands).values(values);
@@ -277,6 +292,8 @@ export async function createProduct(data: InsertProduct) {
     availability: data.availability || "in_stock",
     kaspiLink: data.kaspiLink || null,
     featured: data.featured ?? false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
   
   return db.insert(products).values(values);
@@ -316,6 +333,8 @@ export async function createCategory(data: InsertCategory) {
     name: data.name || "",
     slug: data.slug || "",
     description: data.description || null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
   
   return db.insert(categories).values(values);
@@ -348,6 +367,8 @@ export async function addToCart(data: InsertCartItem) {
     productId: data.productId,
     quantity: data.quantity ?? 1,
     sessionId: data.sessionId,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
   
   return db.insert(cartItems).values(values);
@@ -391,6 +412,8 @@ export async function createReview(review: InsertReview) {
     authorEmail: review.authorEmail || null,
     verified: review.verified ?? false,
     helpful: review.helpful ?? 0,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
   
   return db.insert(reviews).values(values);
