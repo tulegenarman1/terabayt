@@ -1,0 +1,15 @@
+export const ENV = {
+  appId: process.env.VITE_APP_ID ?? "",
+  cookieSecret: process.env.JWT_SECRET ?? "",
+  databaseUrl: process.env.DATABASE_URL ?? "",
+  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
+  ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
+  isProduction: process.env.NODE_ENV === "production",
+  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
+  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  adminUsername: process.env.ADMIN_USERNAME ?? "terabaytkz",
+  adminPassword: process.env.ADMIN_PASSWORD ?? "terabayt8283",
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "dwuexc2nd",
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY ?? "862733166359546",
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET ?? "rJifF8hVeHJfEsqMNCBrmngF0DU",
+};
