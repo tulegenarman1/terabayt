@@ -84,10 +84,13 @@ async function startServer() {
   // Optimized Image Upload Endpoint
   app.post("/api/upload", upload.single("image"), async (req, res) => {
     try {
+      console.log("Upload request received");
       if (!req.file) {
+        console.log("No image file provided");
         return res.status(400).json({ error: "No image file provided" });
       }
 
+      console.log("Processing image with sharp...");
       // Sharp Processing
       const processedBuffer = await sharp(req.file.buffer)
         .resize({
@@ -98,6 +101,7 @@ async function startServer() {
         .webp({ quality: 80 })
         .toBuffer();
 
+      console.log("Uploading to Cloudinary...");
       // Cloudinary Upload
       const uploadResult = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -107,16 +111,22 @@ async function startServer() {
             format: "webp",
           },
           (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
+            if (error) {
+              console.error("Cloudinary error:", error);
+              reject(error);
+            } else {
+              console.log("Cloudinary upload success");
+              resolve(result);
+            }
           }
         );
         uploadStream.end(processedBuffer);
       });
 
+      console.log("Upload complete, returning URL");
       res.json({ url: (uploadResult as any).secure_url });
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("Upload error details:", error);
       res.status(500).json({
         error: error instanceof Error ? error.message : "Upload failed",
       });

@@ -1,6 +1,12 @@
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
   Smartphone, Zap, Award, Phone, MapPin, Instagram, 
   ChevronLeft, ChevronRight, Shield, Truck, Headphones,
   Wallet, CheckCircle2, MessageCircle, ArrowRight,
@@ -11,6 +17,20 @@ import { useState, useRef, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 
 const LOGO_URL = "/logo.jpeg";
+
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+  </svg>
+);
 
 const FAQ = [
   {
@@ -68,14 +88,35 @@ export default function Home() {
           </motion.div>
 
           <div className="flex items-center gap-2 md:gap-6">
-            <a
-              href="https://2gis.kz/almaty/geo/9430047375008939/76.857766,43.206241"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs md:text-sm text-zinc-400 hover:text-emerald-400 transition-colors font-bold"
-            >
-              Адрес
-            </a>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="text-xs md:text-sm text-zinc-400 hover:text-emerald-400 transition-colors font-bold flex items-center gap-1 outline-none">
+                Адреса <ChevronDown className="w-3 h-3" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-white">
+                <DropdownMenuItem className="focus:bg-emerald-500/10 focus:text-emerald-400 cursor-pointer">
+                  <a 
+                    href="https://2gis.kz/almaty/geo/9430047375008939/76.857766,43.206241" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex flex-col gap-1 w-full"
+                  >
+                    <span className="font-bold">Алматы</span>
+                    <span className="text-xs text-zinc-400">ул. Сауранбаева, 5</span>
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="focus:bg-emerald-500/10 focus:text-emerald-400 cursor-pointer">
+                  <a 
+                    href="https://2gis.kz/shymkent/geo/70030076623874100/69.828292,42.418307" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex flex-col gap-1 w-full"
+                  >
+                    <span className="font-bold">Шымкент (Аксу)</span>
+                    <span className="text-xs text-zinc-400">ул. Абылай Хана, 58А</span>
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <button
               onClick={() => navigate("/catalog")}
               className="text-sm md:text-base text-zinc-300 hover:text-emerald-400 transition-colors"
@@ -83,7 +124,7 @@ export default function Home() {
               Каталог
             </button>
             <a
-              href="https://wa.me/77072984386"
+              href="https://wa.me/77072002225"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-3 md:px-4 py-2 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
@@ -370,7 +411,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-20 border-t border-zinc-900 bg-black">
+      <footer id="contacts" className="py-20 border-t border-zinc-900 bg-black">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             <div className="space-y-6">
@@ -398,14 +439,30 @@ export default function Home() {
                       <MapPin className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">Улица Сауранбаева, 5</p>
+                      <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">г. Алматы, ул. Сауранбаева, 5</p>
                       <p className="text-xs text-zinc-500">Открыть в 2GIS</p>
                     </div>
                   </a>
                 </li>
                 <li>
                   <a 
-                    href="https://wa.me/77072984386" 
+                    href="https://2gis.kz/shymkent/geo/70030076623874100/69.828292,42.418307" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-start gap-3 group"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 transition-colors">
+                      <MapPin className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">г. Шымкент (Аксу), ул. Абылай Хана, 58А</p>
+                      <p className="text-xs text-zinc-500">Открыть в 2GIS</p>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a 
+                    href="https://wa.me/77072002225" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 group"
@@ -413,7 +470,7 @@ export default function Home() {
                     <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 transition-colors">
                       <MessageCircle className="w-5 h-5 text-emerald-400" />
                     </div>
-                    <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">+7 707 298 43 86</p>
+                    <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">+7 707 200 22 25</p>
                   </a>
                 </li>
               </ul>
@@ -436,6 +493,20 @@ export default function Home() {
                     <p className="text-xs text-zinc-500">Instagram</p>
                   </div>
                 </a>
+                <a 
+                  href="https://www.tiktok.com/@terabayt.kz?_r=1&_t=ZS-95lFxgBWvtY" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 group"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-zinc-900/50 border border-zinc-800 flex items-center justify-center hover:bg-emerald-500/10 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 group">
+                    <TikTokIcon className="w-7 h-7 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
+                  </div>
+                  <div>
+                    <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">terabayt.kz</p>
+                    <p className="text-xs text-zinc-500">TikTok</p>
+                  </div>
+                </a>
               </div>
             </div>
           </div>
@@ -444,7 +515,7 @@ export default function Home() {
             <p className="text-zinc-500 text-sm">© 2026 Terabayt.kz. Все права защищены.</p>
             <div className="flex gap-6">
               <button onClick={() => navigate("/catalog")} className="text-sm text-zinc-500 hover:text-emerald-400 transition-colors">Каталог</button>
-              <a href="https://wa.me/77072984386" className="text-sm text-zinc-500 hover:text-emerald-400 transition-colors">Помощь</a>
+              <a href="https://wa.me/77072002225" className="text-sm text-zinc-500 hover:text-emerald-400 transition-colors">Помощь</a>
             </div>
           </div>
         </div>

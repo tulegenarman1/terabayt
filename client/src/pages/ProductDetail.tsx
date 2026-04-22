@@ -39,9 +39,9 @@ export default function ProductDetail() {
   }
 
   const finalPrice = product.discountPrice
-    ? parseFloat(product.discountPrice)
-    : parseFloat(product.price);
-  const oldPrice = product.discountPrice ? parseFloat(product.price) : null;
+    ? parseFloat(String(product.discountPrice))
+    : parseFloat(String(product.price));
+  const oldPrice = product.discountPrice ? parseFloat(String(product.price)) : null;
   const discountPercent = oldPrice
     ? Math.round((1 - finalPrice / oldPrice) * 100)
     : 0;
@@ -73,7 +73,7 @@ export default function ProductDetail() {
               Каталог
             </button>
             <a
-              href="https://wa.me/77072984386"
+              href="https://wa.me/77072002225"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-3 md:px-4 py-2 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
@@ -235,7 +235,7 @@ export default function ProductDetail() {
                   </a>
                 )}
                 <a
-                  href={`https://wa.me/77072984386?text=${encodeURIComponent(`Здравствуйте! Интересует ${product.name}`)}`}
+                  href={`https://wa.me/77072002225?text=${encodeURIComponent(`Здравствуйте! Интересует ${product.name}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1"
@@ -318,7 +318,7 @@ export default function ProductDetail() {
 
       {/* Floating WhatsApp */}
       <motion.a
-        href="https://wa.me/77072984386"
+        href="https://wa.me/77072002225"
         target="_blank"
         rel="noopener noreferrer"
         initial={{ scale: 0, opacity: 0 }}

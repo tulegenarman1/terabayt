@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import ImageEditor from "@/components/ImageEditor";
 
 const LOGO_URL = "/logo.jpeg";
 type Tab = "products" | "categories" | "brands";
@@ -282,11 +283,11 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4 text-sm">
                           <div>
                             <p className="text-emerald-400 font-semibold">
-                              {parseFloat(product.discountPrice || product.price).toLocaleString()} ₸
+                              {parseFloat(String(product.discountPrice || product.price)).toLocaleString()} ₸
                             </p>
                             {product.discountPrice && (
                               <p className="text-xs text-zinc-600 line-through">
-                                {parseFloat(product.price).toLocaleString()} ₸
+                                {parseFloat(String(product.price)).toLocaleString()} ₸
                               </p>
                             )}
                           </div>
@@ -541,18 +542,27 @@ function StatCard({ label, value, icon: Icon, accent }: { label: string; value: 
 const inputClass = "bg-black border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/20";
 
 async function uploadImage(file: File): Promise<string> {
+  console.log("uploadImage started for file:", file.name, file.size, file.type);
   const formData = new FormData();
   formData.append("image", file);
-  const res = await fetch("/api/upload", {
-    method: "POST",
-    body: formData,
-  });
-  if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error || "Ошибка при загрузке изображения");
+  try {
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: formData,
+    });
+    console.log("uploadImage response status:", res.status);
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error("uploadImage error response:", errorData);
+      throw new Error(errorData.error || "Ошибка при загрузке изображения");
+    }
+    const data = await res.json();
+    console.log("uploadImage success, url:", data.url);
+    return data.url;
+  } catch (error) {
+    console.error("uploadImage fetch/processing error:", error);
+    throw error;
   }
-  const data = await res.json();
-  return data.url;
 }
 
 function ProductForm({
@@ -592,6 +602,7 @@ function ProductForm({
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>(editingProduct?.images?.[0] || "");
+  const [imageToEdit, setImageToEdit] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const createMutation = trpc.products.create.useMutation();
@@ -600,11 +611,23 @@ function ProductForm({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => setImagePreview(reader.result as string);
+      reader.onloadend = () => setImageToEdit(reader.result as string);
       reader.readAsDataURL(file);
     }
+    // Очищаем input, чтобы можно было выбрать тот же файл повторно
+    e.target.value = "";
+  };
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], "product_image.jpg", { type: "image/jpeg" });
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result as string);
+      setImageToEdit(null);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -790,6 +813,14 @@ function ProductForm({
           )}
         </div>
       </div>
+      {imageToEdit && (
+        <ImageEditor
+          image={imageToEdit}
+          onCropComplete={handleCropComplete}
+          onCancel={() => setImageToEdit(null)}
+          aspect={4/3}
+        />
+      )}
       <div className="flex gap-3 pt-2">
         <Button
           type="submit"
@@ -904,6 +935,7 @@ function BrandForm({
   });
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string>(editingBrand?.logo || "");
+  const [imageToEdit, setImageToEdit] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const createMutation = trpc.brands.create.useMutation();
@@ -912,11 +944,23 @@ function BrandForm({
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setLogoFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => setLogoPreview(reader.result as string);
+      reader.onloadend = () => setImageToEdit(reader.result as string);
       reader.readAsDataURL(file);
     }
+    // Очищаем input, чтобы можно было выбрать тот же файл повторно
+    e.target.value = "";
+  };
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const file = new File([croppedBlob], "brand_logo.jpg", { type: "image/jpeg" });
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setLogoPreview(reader.result as string);
+      setImageToEdit(null);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -973,6 +1017,14 @@ function BrandForm({
         </div>
         <p className="text-xs text-zinc-500 mt-2">JPG, PNG, WebP до 2 МБ</p>
       </div>
+      {imageToEdit && (
+        <ImageEditor
+          image={imageToEdit}
+          onCropComplete={handleCropComplete}
+          onCancel={() => setImageToEdit(null)}
+          aspect={1}
+        />
+      )}
       <div className="flex gap-3 pt-2">
         <Button
           type="submit"

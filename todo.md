@@ -15,7 +15,7 @@
 - [x] Product detail page with images/video gallery and Kaspi.kz buy button
 - [x] Search bar functionality to find laptops by name or specs
 - [x] Shopping cart sidebar for collecting items
-- [x] Footer with contact info (phone: 87072984386, address, WhatsApp, Instagram, 2GIS)
+- [x] Footer with contact info (phone: 87072002225, address, WhatsApp, Instagram, 2GIS)
 
 ## Admin Panel
 - [x] Admin login page with credentials validation (admin/terabayt2024)

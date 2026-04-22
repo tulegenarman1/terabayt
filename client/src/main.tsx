@@ -18,7 +18,20 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
-  window.location.href = getLoginUrl();
+  // Если мы в админ-панели, перенаправляем на страницу логина админа
+  if (window.location.pathname.startsWith("/admin")) {
+    window.location.href = "/admin/login";
+    return;
+  }
+
+  try {
+    const loginUrl = getLoginUrl();
+    if (loginUrl && !loginUrl.startsWith("#")) {
+      window.location.href = loginUrl;
+    }
+  } catch (err) {
+    console.error("Critical error during redirect:", err);
+  }
 };
 
 queryClient.getQueryCache().subscribe(event => {

@@ -113,7 +113,7 @@ export default function Catalog() {
               Главная
             </button>
             <a
-              href="https://wa.me/77072984386"
+              href="https://wa.me/77072002225"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-3 md:px-4 py-2 rounded-lg transition-all shadow-lg shadow-emerald-500/20"
