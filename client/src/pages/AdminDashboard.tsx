@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
   Plus, Trash2, Pencil, LogOut, Package, Tag, 
-  ShieldCheck, Star, Search, X, Image as ImageIcon
+  ShieldCheck, Star, Search, X, Image as ImageIcon,
+  ChevronDown, ChevronUp
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
@@ -541,6 +542,76 @@ function StatCard({ label, value, icon: Icon, accent }: { label: string; value: 
 
 const inputClass = "bg-black border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/20";
 
+function SpecInput({ label, name, value, onChange, options }: { 
+  label: string; 
+  name: string; 
+  value?: string; 
+  onChange: (name: string, value: string) => void; 
+  options: string[] 
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const filteredOptions = options.filter(opt => 
+    opt.toLowerCase().includes((value || "").toLowerCase())
+  );
+
+  return (
+    <div className="relative">
+      <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">{label}</label>
+      <div className="relative">
+        <Input
+          value={value || ""}
+          onChange={(e) => {
+            onChange(name, e.target.value);
+            if (!isOpen) setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          className={`${inputClass} pr-10`}
+          placeholder={`Выберите или введите ${label.toLowerCase()}...`}
+        />
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-emerald-400 transition-colors"
+        >
+          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+        </button>
+
+        <AnimatePresence>
+          {isOpen && filteredOptions.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              className="absolute z-[100] w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-md shadow-2xl max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800"
+            >
+              {filteredOptions.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => {
+                    onChange(name, opt);
+                    setIsOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-zinc-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors border-b border-zinc-900/50 last:border-0"
+                >
+                  {opt}
+                </button>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      {isOpen && (
+        <div className="fixed inset-0 z-[90]" onClick={() => setIsOpen(false)} />
+      )}
+    </div>
+  );
+}
+
 async function uploadImage(file: File): Promise<string> {
   console.log("uploadImage started for file:", file.name, file.size, file.type);
   const formData = new FormData();
@@ -582,13 +653,21 @@ function ProductForm({
     model: editingProduct?.model || "",
     price: editingProduct?.price || "",
     discountPrice: editingProduct?.discountPrice || "",
-    description: editingProduct?.description || "",
     kaspiLink: editingProduct?.kaspiLink || "",
     availability: (editingProduct?.availability || "in_stock") as "in_stock" | "out_of_stock" | "coming_soon",
     featured: editingProduct?.featured || false,
+    specs: editingProduct?.specs || {},
   });
   const { data: categories = [] } = trpc.categories.list.useQuery();
   const { data: brands = [] } = trpc.brands.list.useQuery();
+  const getSelectedCategory = () => categories.find(c => c.id === formData.categoryId);
+
+  const handleSpecChange = (name: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      specs: { ...prev.specs, [name]: value }
+    }));
+  };
 
   // Автовыбор первой категории если не выбрана
   useEffect(() => {
@@ -658,7 +737,7 @@ function ProductForm({
             model: formData.model,
             price: formData.price.toString(),
             discountPrice: formData.discountPrice ? formData.discountPrice.toString() : undefined,
-            description: formData.description,
+            specs: formData.specs,
             kaspiLink: formData.kaspiLink,
             availability: formData.availability,
             featured: formData.featured,
@@ -672,6 +751,7 @@ function ProductForm({
           price: formData.price.toString(),
           discountPrice: formData.discountPrice ? formData.discountPrice.toString() : undefined,
           images: imageUrl ? [imageUrl] : [],
+          specs: formData.specs,
         });
         toast.success("Товар добавлен");
       }
@@ -786,15 +866,218 @@ function ProductForm({
           </select>
         </div>
       </div>
-      <div>
-        <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Описание</label>
-        <textarea
-          placeholder="Краткое описание товара..."
-          value={formData.description}
-          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full bg-black border border-zinc-800 rounded-md px-3 py-2 text-white placeholder:text-zinc-600 focus:border-emerald-500 focus:outline-none text-sm"
-          rows={3}
-        />
+
+      {/* Dynamic Specs Section */}
+      <div className="space-y-4 border-t border-zinc-800 pt-5">
+        <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-widest">Характеристики</h4>
+        <div className="grid md:grid-cols-2 gap-4">
+          {getSelectedCategory()?.slug.includes("laptop") || getSelectedCategory()?.name.toLowerCase().includes("ноутбук") ? (
+            <>
+              <SpecInput
+                label="Процессор"
+                name="cpu"
+                value={formData.specs.cpu}
+                onChange={handleSpecChange}
+                options={[
+                  "Intel Core i3-1215U", "Intel Core i3-1315U", "Intel Core i5-1235U", "Intel Core i5-12450H", "Intel Core i5-1335U", 
+                  "Intel Core i5-13420H", "Intel Core i5-13500H", "Intel Core i5-12500H", "Intel Core i7-1255U", "Intel Core i7-12650H", 
+                  "Intel Core i7-1355U", "Intel Core i7-13620H", "Intel Core i7-13700H", "Intel Core i7-14700H", "Intel Core i9-13900H", 
+                  "Intel Core i9-13980HX", "Intel Core i9-14900HX", "Intel Core Ultra 5 125H", "Intel Core Ultra 7 155H",
+                  "AMD Ryzen 3 5300U", "AMD Ryzen 3 7320U", "AMD Ryzen 5 5500U", "AMD Ryzen 5 5600H", "AMD Ryzen 5 7520U", 
+                  "AMD Ryzen 5 7535HS", "AMD Ryzen 7 5700U", "AMD Ryzen 7 5800H", "AMD Ryzen 7 7730U", "AMD Ryzen 7 7735HS", 
+                  "AMD Ryzen 7 7840HS", "AMD Ryzen 9 7940HS", "AMD Ryzen 9 8945HS",
+                  "Apple M1", "Apple M1 Pro", "Apple M1 Max", "Apple M2", "Apple M2 Pro", "Apple M2 Max", "Apple M3", "Apple M3 Pro", "Apple M3 Max"
+                ]}
+              />
+              <SpecInput
+                label="Оперативная память"
+                name="ram"
+                value={formData.specs.ram}
+                onChange={handleSpecChange}
+                options={[
+                  "4 ГБ DDR4", "8 ГБ DDR4", "16 ГБ DDR4", "32 ГБ DDR4",
+                  "8 ГБ LPDDR5", "16 ГБ LPDDR5", "32 ГБ LPDDR5x",
+                  "8 ГБ DDR5", "16 ГБ DDR5", "32 ГБ DDR5", "64 ГБ DDR5",
+                  "8 ГБ Unified Memory", "16 ГБ Unified Memory", "24 ГБ Unified Memory", "36 ГБ Unified Memory"
+                ]}
+              />
+              <SpecInput
+                label="Накопитель"
+                name="storage"
+                value={formData.specs.storage}
+                onChange={handleSpecChange}
+                options={["128 ГБ SSD", "256 ГБ SSD", "512 ГБ SSD", "1 ТБ SSD", "2 ТБ SSD", "4 ТБ SSD"]}
+              />
+              <SpecInput
+                label="Видеокарта"
+                name="gpu"
+                value={formData.specs.gpu}
+                onChange={handleSpecChange}
+                options={[
+                  "Встроенная (Intel UHD/Iris Xe)", "Встроенная (AMD Radeon)", "Apple GPU (7-core)", "Apple GPU (8-core)", "Apple GPU (10-core)",
+                  "NVIDIA GeForce GTX 1650", "NVIDIA GeForce RTX 2050", "NVIDIA GeForce RTX 3050",
+                  "NVIDIA GeForce RTX 3050 Ti", "NVIDIA GeForce RTX 3060", "NVIDIA GeForce RTX 4050",
+                  "NVIDIA GeForce RTX 4060", "NVIDIA GeForce RTX 4070", "NVIDIA GeForce RTX 4080", "NVIDIA GeForce RTX 4090"
+                ]}
+              />
+              <SpecInput
+                label="Экран"
+                name="display"
+                value={formData.specs.display}
+                onChange={handleSpecChange}
+                options={[
+                  "13.3\" IPS Retina", "13.6\" Liquid Retina", "14\" IPS FHD+", "14\" OLED 2.8K", "14.2\" Liquid Retina XDR",
+                  "15.6\" IPS FHD 60Hz", "15.6\" IPS FHD 144Hz", "15.6\" OLED FHD", "16\" IPS 2.5K 165Hz", "16\" OLED 3.2K", "16.2\" Liquid Retina XDR",
+                  "17.3\" IPS FHD 144Hz", "17.3\" IPS 2K 240Hz"
+                ]}
+              />
+              <SpecInput
+                label="ОС"
+                name="os"
+                value={formData.specs.os}
+                onChange={handleSpecChange}
+                options={["Windows 11 Home", "Windows 11 Pro", "macOS Sonoma", "Без ОС (FreeDOS)", "Ubuntu Linux"]}
+              />
+            </>
+          ) : getSelectedCategory()?.slug.includes("phone") || getSelectedCategory()?.name.toLowerCase().includes("телефон") || getSelectedCategory()?.name.toLowerCase().includes("смартфон") ? (
+            <>
+              <SpecInput
+                label="Процессор"
+                name="cpu"
+                value={formData.specs.cpu}
+                onChange={handleSpecChange}
+                options={[
+                  "Apple A15 Bionic", "Apple A16 Bionic", "Apple A17 Pro", "Apple A18", "Apple A18 Pro",
+                  "Snapdragon 8 Gen 2", "Snapdragon 8 Gen 3", "Snapdragon 8s Gen 3", "Snapdragon 7+ Gen 3", "Snapdragon 6 Gen 1",
+                  "Exynos 2200", "Exynos 2400", "Dimensity 9200+", "Dimensity 9300", "Google Tensor G3"
+                ]}
+              />
+              <SpecInput
+                label="Оперативная память"
+                name="ram"
+                value={formData.specs.ram}
+                onChange={handleSpecChange}
+                options={["4 ГБ", "6 ГБ", "8 ГБ", "12 ГБ", "16 ГБ", "24 ГБ"]}
+              />
+              <SpecInput
+                label="Встроенная память"
+                name="storage"
+                value={formData.specs.storage}
+                onChange={handleSpecChange}
+                options={["64 ГБ", "128 ГБ", "256 ГБ", "512 ГБ", "1 ТБ"]}
+              />
+              <SpecInput
+                label="Экран"
+                name="display"
+                value={formData.specs.display}
+                onChange={handleSpecChange}
+                options={[
+                  "6.1\" Super Retina XDR", "6.7\" Super Retina XDR", "6.1\" OLED 120Hz", "6.7\" AMOLED 120Hz",
+                  "6.8\" Dynamic AMOLED 2X", "6.36\" OLED", "6.78\" AMOLED 144Hz"
+                ]}
+              />
+              <SpecInput
+                label="Цвет"
+                name="color"
+                value={formData.specs.color}
+                onChange={handleSpecChange}
+                options={[
+                  "Space Black", "Silver", "Gold", "Deep Purple", "Titanium Gray", "Natural Titanium", "Blue Titanium", "White Titanium", "Black Titanium",
+                  "Phantom Black", "Cream", "Green", "Lavender", "Sky Blue", "Graphite"
+                ]}
+              />
+            </>
+          ) : getSelectedCategory()?.slug.includes("printer") || getSelectedCategory()?.name.toLowerCase().includes("принтер") ? (
+            <>
+              <SpecInput
+                label="Тип принтера"
+                name="type"
+                value={formData.specs.type}
+                onChange={handleSpecChange}
+                options={["Лазерный", "Струйный", "МФУ (Лазерный)", "МФУ (Струйный)", "Термопринтер", "Фотопринтер"]}
+              />
+              <SpecInput
+                label="Цветность"
+                name="color"
+                value={formData.specs.color}
+                onChange={handleSpecChange}
+                options={["Черно-белый (Монохромный)", "Цветной"]}
+              />
+              <SpecInput
+                label="Скорость печати"
+                name="speed"
+                value={formData.specs.speed}
+                onChange={handleSpecChange}
+                options={["До 18 стр/мин", "20-25 стр/мин", "30-35 стр/мин", "40+ стр/мин"]}
+              />
+              <SpecInput
+                label="Интерфейс"
+                name="interface"
+                value={formData.specs.interface}
+                onChange={handleSpecChange}
+                options={["USB 2.0", "Wi-Fi + USB", "Ethernet + Wi-Fi + USB", "Bluetooth + Wi-Fi", "USB + Bluetooth"]}
+              />
+              <SpecInput
+                label="Формат печати"
+                name="format"
+                value={formData.specs.format}
+                onChange={handleSpecChange}
+                options={["A4", "A3", "A4, A5, B5", "10x15 см", "A6"]}
+              />
+            </>
+          ) : (
+            <div className="col-span-2">
+              <p className="text-xs text-zinc-500 mb-2 italic">Для этой категории нет предустановленных полей. Используйте общее описание или добавьте характеристики вручную.</p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const key = prompt("Название характеристики (например, 'Материал'):");
+                  if (key) {
+                    setFormData({
+                      ...formData,
+                      specs: { ...formData.specs, [key]: "" }
+                    });
+                  }
+                }}
+                className="border-zinc-800 bg-transparent text-zinc-400 hover:text-emerald-400"
+              >
+                <Plus className="w-3.5 h-3.5 mr-2" />
+                Добавить поле
+              </Button>
+            </div>
+          )}
+          
+          {/* Custom specs that might have been added */}
+          {Object.entries(formData.specs).map(([key, value]) => {
+            const standardKeys = ["cpu", "ram", "storage", "gpu", "display", "os", "type", "color", "speed", "interface"];
+            if (standardKeys.includes(key)) return null;
+            return (
+              <div key={key}>
+                <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider flex justify-between">
+                  {key}
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      const newSpecs = { ...formData.specs };
+                      delete newSpecs[key];
+                      setFormData({ ...formData, specs: newSpecs });
+                    }}
+                    className="text-red-500 hover:text-red-400"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </label>
+                <Input
+                  value={value as string}
+                  onChange={(e) => handleSpecChange(key, e.target.value)}
+                  className={inputClass}
+                />
+              </div>
+            );
+          })}
+        </div>
       </div>
       <div>
         <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Фото товара</label>

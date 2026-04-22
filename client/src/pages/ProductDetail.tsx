@@ -274,17 +274,36 @@ export default function ProductDetail() {
                 <span className="w-1 h-8 bg-emerald-400 rounded-full" />
                 Характеристики
               </h2>
-              <div className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+              <div className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl shadow-black/50">
                 <div className="divide-y divide-zinc-900">
-                  {Object.entries(product.specs).map(([key, value]) => (
-                    <div
-                      key={key}
-                      className="grid grid-cols-3 gap-4 px-6 py-4 hover:bg-zinc-900/30 transition-colors"
-                    >
-                      <p className="text-zinc-500 capitalize">{key}</p>
-                      <p className="col-span-2 font-medium text-white">{String(value)}</p>
-                    </div>
-                  ))}
+                  {Object.entries(product.specs).map(([key, value]) => {
+                    const labels: Record<string, string> = {
+                      cpu: "Процессор",
+                      ram: "Оперативная память",
+                      storage: "Память",
+                      gpu: "Видеокарта",
+                      display: "Экран",
+                      os: "Операционная система",
+                      type: "Тип",
+                      color: "Цвет",
+                      speed: "Скорость печати",
+                      interface: "Интерфейс",
+                      format: "Формат печати",
+                    };
+                    return (
+                      <div
+                        key={key}
+                        className="grid grid-cols-2 sm:grid-cols-3 gap-4 px-6 py-4 hover:bg-zinc-900/30 transition-colors group"
+                      >
+                        <p className="text-zinc-500 font-medium group-hover:text-zinc-400 transition-colors">
+                          {labels[key] || key}
+                        </p>
+                        <p className="sm:col-span-2 font-semibold text-white group-hover:text-emerald-400 transition-colors">
+                          {String(value)}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </motion.div>
