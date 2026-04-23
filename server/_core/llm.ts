@@ -315,9 +315,6 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
 
   if (!isOpenAI) {
     payload.max_tokens = 32768
-    payload.thinking = {
-      budget_tokens: 2048
-    }
   }
 
   const normalizedResponseFormat = normalizeResponseFormat({
@@ -329,9 +326,6 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
 
   if (!isOpenAI && !isGemini) {
     payload.max_tokens = 32768
-    payload.thinking = {
-      budget_tokens: 2048
-    }
   }
 
   const url = resolveApiUrl();
