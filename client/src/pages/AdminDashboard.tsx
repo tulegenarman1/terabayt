@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { 
   Plus, Trash2, Pencil, LogOut, Package, Tag, 
   ShieldCheck, Star, Search, X, Image as ImageIcon,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, Sun, Moon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
+import { useTheme } from "@/contexts/ThemeContext";
 import { toast } from "sonner";
 import ImageEditor from "@/components/ImageEditor";
 
@@ -17,6 +18,7 @@ type Tab = "products" | "categories" | "brands";
 
 export default function AdminDashboard() {
   const [, navigate] = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const [tab, setTab] = useState<Tab>("products");
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -102,9 +104,9 @@ export default function AdminDashboard() {
   const inStockCount = products.filter((p) => p.availability === "in_stock").length;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Header */}
-      <header className="bg-black/80 backdrop-blur-xl border-b border-emerald-500/20 sticky top-0 z-50">
+      <header className="bg-background/80 backdrop-blur-xl border-b border-border sticky top-0 z-50">
         <div className="container flex items-center justify-between py-4">
           <div className="flex items-center gap-3">
             <img
@@ -122,16 +124,31 @@ export default function AdminDashboard() {
                   <span className="text-xs text-emerald-400 font-medium">Админ</span>
                 </span>
               </div>
-              <p className="text-xs text-zinc-500 hidden sm:block">Панель управления</p>
+              <p className="text-xs text-muted-foreground hidden sm:block">Панель управления</p>
             </div>
           </div>
-          <button
-            onClick={handleLogout}
-            className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-red-400 transition-colors px-4 py-2 border border-zinc-800 hover:border-red-500/50 rounded-lg"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Выход</span>
-          </button>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg border border-border hover:bg-accent transition-colors"
+              title={theme === "dark" ? "Светлая тема" : "Темная тема"}
+            >
+              {theme === "dark" ? (
+                <Sun className="w-5 h-5 text-yellow-400" />
+              ) : (
+                <Moon className="w-5 h-5 text-emerald-600" />
+              )}
+            </button>
+
+            <button
+              onClick={handleLogout}
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors px-4 py-2 border border-border hover:border-destructive/50 rounded-lg"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Выход</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -145,13 +162,13 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 bg-zinc-950 border border-zinc-800 rounded-xl p-1 w-fit">
+        <div className="flex gap-2 mb-6 bg-card border border-border rounded-xl p-1 w-fit">
           <button
             onClick={() => { setTab("products"); setShowForm(false); }}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               tab === "products"
                 ? "bg-emerald-500 text-black"
-                : "text-zinc-400 hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Package className="w-4 h-4 inline mr-2" />
@@ -162,7 +179,7 @@ export default function AdminDashboard() {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               tab === "categories"
                 ? "bg-emerald-500 text-black"
-                : "text-zinc-400 hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Tag className="w-4 h-4 inline mr-2" />
@@ -173,7 +190,7 @@ export default function AdminDashboard() {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
               tab === "brands"
                 ? "bg-emerald-500 text-black"
-                : "text-zinc-400 hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             <Star className="w-4 h-4 inline mr-2" />
@@ -187,13 +204,13 @@ export default function AdminDashboard() {
             {/* Toolbar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                 <Input
                   type="text"
                   placeholder="Поиск по названию или бренду..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:border-emerald-500"
+                  className="pl-10 bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:border-emerald-500"
                 />
               </div>
               <Button
@@ -216,7 +233,7 @@ export default function AdminDashboard() {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden mb-6"
                 >
-                  <div className="bg-zinc-950 border border-emerald-500/30 rounded-2xl p-6">
+                  <div className="bg-card border border-emerald-500/30 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="text-xl font-bold">
                         {editingProduct ? "Редактирование товара" : "Новый товар"}
@@ -226,7 +243,7 @@ export default function AdminDashboard() {
                           setShowForm(false);
                           setEditingProduct(null);
                         }}
-                        className="text-zinc-500 hover:text-white p-1"
+                        className="text-muted-foreground hover:text-foreground p-1"
                       >
                         <X className="w-5 h-5" />
                       </button>
@@ -249,45 +266,45 @@ export default function AdminDashboard() {
             </AnimatePresence>
 
             {/* Products Table */}
-            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+            <div className="bg-card border border-border rounded-2xl overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-zinc-900/50 border-b border-zinc-800">
+                  <thead className="bg-muted/50 border-b border-border">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">Товар</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">Бренд</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">Цена</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider">Статус</th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wider">Хит</th>
-                      <th className="px-6 py-4 text-right text-xs font-semibold text-zinc-400 uppercase tracking-wider">Действия</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Товар</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Бренд</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Цена</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Статус</th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Хит</th>
+                      <th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Действия</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-zinc-900">
+                  <tbody className="divide-y divide-border">
                     {filteredProducts.map((product) => (
-                      <tr key={product.id} className="hover:bg-zinc-900/30 transition-colors">
+                      <tr key={product.id} className="hover:bg-muted/30 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-lg bg-zinc-900 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
                               {product.images?.[0] ? (
                                 <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
                               ) : (
-                                <ImageIcon className="w-5 h-5 text-zinc-700" />
+                                <ImageIcon className="w-5 h-5 text-muted-foreground" />
                               )}
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-white truncate max-w-xs">{product.name}</p>
-                              <p className="text-xs text-zinc-500">{product.model}</p>
+                              <p className="text-sm font-medium text-foreground truncate max-w-xs">{product.name}</p>
+                              <p className="text-xs text-muted-foreground">{product.model}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-zinc-300">{product.brand}</td>
+                        <td className="px-6 py-4 text-sm text-muted-foreground">{product.brand}</td>
                         <td className="px-6 py-4 text-sm">
                           <div>
                             <p className="text-emerald-400 font-semibold">
                               {parseFloat(String(product.discountPrice || product.price)).toLocaleString()} ₸
                             </p>
                             {product.discountPrice && (
-                              <p className="text-xs text-zinc-600 line-through">
+                              <p className="text-xs text-muted-foreground line-through">
                                 {parseFloat(String(product.price)).toLocaleString()} ₸
                               </p>
                             )}
@@ -321,7 +338,7 @@ export default function AdminDashboard() {
                               }}
                               className="sr-only peer"
                             />
-                            <div className="relative w-10 h-5 bg-zinc-800 rounded-full peer-checked:bg-emerald-500 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
+                            <div className="relative w-10 h-5 bg-muted rounded-full peer-checked:bg-emerald-500 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5" />
                           </label>
                         </td>
                         <td className="px-6 py-4 text-right">
@@ -330,7 +347,7 @@ export default function AdminDashboard() {
                               onClick={() => handleEditProduct(product)}
                               size="sm"
                               variant="outline"
-                              className="border-zinc-800 bg-transparent text-zinc-300 hover:border-emerald-500 hover:text-emerald-400 gap-1.5"
+                              className="border-border bg-transparent text-muted-foreground hover:border-emerald-500 hover:text-emerald-400 gap-1.5"
                             >
                               <Pencil className="w-3.5 h-3.5" />
                               <span className="hidden md:inline">Редактировать</span>
@@ -339,7 +356,7 @@ export default function AdminDashboard() {
                               onClick={() => handleDeleteProduct(product.id)}
                               size="sm"
                               variant="outline"
-                              className="border-zinc-800 bg-transparent text-zinc-300 hover:border-red-500 hover:text-red-400 gap-1.5"
+                              className="border-border bg-transparent text-muted-foreground hover:border-red-500 hover:text-red-400 gap-1.5"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                               <span className="hidden md:inline">Удалить</span>
@@ -350,7 +367,7 @@ export default function AdminDashboard() {
                     ))}
                     {filteredProducts.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-zinc-500">
+                        <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
                           {searchQuery ? "Товары не найдены" : "Нет товаров"}
                         </td>
                       </tr>
@@ -366,7 +383,7 @@ export default function AdminDashboard() {
         {tab === "categories" && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <p className="text-zinc-400">Управление категориями товаров</p>
+              <p className="text-muted-foreground">Управление категориями товаров</p>
               <Button
                 onClick={() => setShowForm(!showForm)}
                 className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold gap-2 shadow-lg shadow-emerald-500/20"
@@ -384,7 +401,7 @@ export default function AdminDashboard() {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden mb-6"
                 >
-                  <div className="bg-zinc-950 border border-emerald-500/30 rounded-2xl p-6">
+                  <div className="bg-card border border-emerald-500/30 rounded-2xl p-6">
                     <h3 className="text-xl font-bold mb-6">Новая категория</h3>
                     <CategoryForm
                       onClose={() => setShowForm(false)}
@@ -402,22 +419,22 @@ export default function AdminDashboard() {
               {categories.map((category) => (
                 <div
                   key={category.id}
-                  className="bg-zinc-950 border border-zinc-800 hover:border-emerald-500/30 rounded-xl p-5 transition-all group"
+                  className="bg-card border border-border hover:border-emerald-500/30 rounded-xl p-5 transition-all group"
                 >
                   <div className="flex items-start gap-3 mb-3">
                     <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
                       <Tag className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-white truncate">{category.name}</h3>
-                      <p className="text-xs text-zinc-500 truncate">{category.description || "—"}</p>
+                      <h3 className="font-bold text-foreground truncate">{category.name}</h3>
+                      <p className="text-xs text-muted-foreground truncate">{category.description || "—"}</p>
                     </div>
                   </div>
                   <Button
                     onClick={() => handleDeleteCategory(category.id)}
                     size="sm"
                     variant="outline"
-                    className="w-full border-zinc-800 bg-transparent text-zinc-400 hover:border-red-500 hover:text-red-400 gap-1.5"
+                    className="w-full border-border bg-transparent text-muted-foreground hover:border-red-500 hover:text-red-400 gap-1.5"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     Удалить
@@ -425,7 +442,7 @@ export default function AdminDashboard() {
                 </div>
               ))}
               {categories.length === 0 && (
-                <div className="col-span-full bg-zinc-950 border border-zinc-800 rounded-xl p-12 text-center text-zinc-500">
+                <div className="col-span-full bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">
                   Нет категорий
                 </div>
               )}
@@ -437,7 +454,7 @@ export default function AdminDashboard() {
         {tab === "brands" && (
           <div>
             <div className="flex justify-between items-center mb-6">
-              <p className="text-zinc-400">Управление брендами товаров</p>
+              <p className="text-muted-foreground">Управление брендами товаров</p>
               <Button
                 onClick={() => {
                   setEditingBrand(null);
@@ -458,7 +475,7 @@ export default function AdminDashboard() {
                   exit={{ opacity: 0, height: 0 }}
                   className="overflow-hidden mb-6"
                 >
-                  <div className="bg-zinc-950 border border-emerald-500/30 rounded-2xl p-6">
+                  <div className="bg-card border border-emerald-500/30 rounded-2xl p-6">
                     <h3 className="text-xl font-bold mb-6">
                       {editingBrand ? "Редактирование бренда" : "Новый бренд"}
                     </h3>
@@ -483,22 +500,22 @@ export default function AdminDashboard() {
               {brands.map((brand) => (
                 <div
                   key={brand.id}
-                  className="bg-zinc-950 border border-zinc-800 hover:border-emerald-500/30 rounded-xl p-5 transition-all group flex flex-col items-center"
+                  className="bg-card border border-border hover:border-emerald-500/30 rounded-xl p-5 transition-all group flex flex-col items-center"
                 >
-                  <div className="w-20 h-20 rounded-xl bg-zinc-900 flex items-center justify-center mb-4 overflow-hidden p-2">
+                  <div className="w-20 h-20 rounded-xl bg-muted flex items-center justify-center mb-4 overflow-hidden p-2">
                     {brand.logo ? (
                       <img src={brand.logo} alt={brand.name} className="max-w-full max-h-full object-contain" />
                     ) : (
-                      <Star className="w-8 h-8 text-zinc-700" />
+                      <Star className="w-8 h-8 text-muted-foreground" />
                     )}
                   </div>
-                  <h3 className="font-bold text-white mb-4">{brand.name}</h3>
+                  <h3 className="font-bold text-foreground mb-4">{brand.name}</h3>
                   <div className="flex gap-2 w-full">
                     <Button
                       onClick={() => handleEditBrand(brand)}
                       size="sm"
                       variant="outline"
-                      className="flex-1 border-zinc-800 bg-transparent text-zinc-400 hover:border-emerald-500 hover:text-emerald-400"
+                      className="flex-1 border-border bg-transparent text-muted-foreground hover:border-emerald-500 hover:text-emerald-400"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
@@ -506,7 +523,7 @@ export default function AdminDashboard() {
                       onClick={() => handleDeleteBrand(brand.id)}
                       size="sm"
                       variant="outline"
-                      className="flex-1 border-zinc-800 bg-transparent text-zinc-400 hover:border-red-500 hover:text-red-400"
+                      className="flex-1 border-border bg-transparent text-muted-foreground hover:border-red-500 hover:text-red-400"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
@@ -514,7 +531,7 @@ export default function AdminDashboard() {
                 </div>
               ))}
               {brands.length === 0 && (
-                <div className="col-span-full bg-zinc-950 border border-zinc-800 rounded-xl p-12 text-center text-zinc-500">
+                <div className="col-span-full bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">
                   Нет брендов
                 </div>
               )}
@@ -528,19 +545,19 @@ export default function AdminDashboard() {
 
 function StatCard({ label, value, icon: Icon, accent }: { label: string; value: number; icon: any; accent?: boolean }) {
   return (
-    <div className={`bg-zinc-950 border ${accent ? "border-emerald-500/30" : "border-zinc-800"} rounded-2xl p-5`}>
+    <div className={`bg-card border ${accent ? "border-emerald-500/30" : "border-border"} rounded-2xl p-5`}>
       <div className="flex items-start justify-between mb-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${accent ? "bg-emerald-500/20" : "bg-zinc-900"}`}>
-          <Icon className={`w-5 h-5 ${accent ? "text-emerald-400" : "text-zinc-400"}`} />
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${accent ? "bg-emerald-500/20" : "bg-muted"}`}>
+          <Icon className={`w-5 h-5 ${accent ? "text-emerald-400" : "text-muted-foreground"}`} />
         </div>
       </div>
-      <div className="text-3xl font-black">{value}</div>
-      <div className="text-xs text-zinc-500 mt-1 uppercase tracking-wider">{label}</div>
+      <div className="text-3xl font-black text-foreground">{value}</div>
+      <div className="text-xs text-muted-foreground mt-1 uppercase tracking-wider">{label}</div>
     </div>
   );
 }
 
-const inputClass = "bg-black border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/20";
+const inputClass = "bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:border-emerald-500 focus-visible:ring-emerald-500/20";
 
 function SpecInput({ label, name, value, onChange, options }: { 
   label: string; 
@@ -557,7 +574,7 @@ function SpecInput({ label, name, value, onChange, options }: {
 
   return (
     <div className="relative">
-      <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">{label}</label>
+      <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">{label}</label>
       <div className="relative">
         <Input
           value={value || ""}
@@ -575,7 +592,7 @@ function SpecInput({ label, name, value, onChange, options }: {
             e.stopPropagation();
             setIsOpen(!isOpen);
           }}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-emerald-400 transition-colors"
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-emerald-400 transition-colors"
         >
           <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
         </button>
@@ -586,7 +603,7 @@ function SpecInput({ label, name, value, onChange, options }: {
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
-              className="absolute z-[100] w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-md shadow-2xl max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-800"
+              className="absolute z-[100] w-full mt-1 bg-card border border-border rounded-md shadow-2xl max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-border"
             >
               {filteredOptions.map((opt) => (
                 <button
@@ -596,7 +613,7 @@ function SpecInput({ label, name, value, onChange, options }: {
                     onChange(name, opt);
                     setIsOpen(false);
                   }}
-                  className="w-full text-left px-3 py-2 text-sm text-zinc-400 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors border-b border-zinc-900/50 last:border-0"
+                  className="w-full text-left px-3 py-2 text-sm text-muted-foreground hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors border-b border-border/50 last:border-0"
                 >
                   {opt}
                 </button>
@@ -767,7 +784,7 @@ function ProductForm({
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Название</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Название</label>
           <Input
             placeholder="ASUS ROG Strix G15..."
             value={formData.name}
@@ -777,7 +794,7 @@ function ProductForm({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Бренд</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Бренд</label>
           <select
             value={formData.brandId || ""}
             onChange={(e) => {
@@ -788,7 +805,7 @@ function ProductForm({
                 brand: selectedBrand?.name || ""
               });
             }}
-            className="w-full h-9 bg-black border border-zinc-800 rounded-md px-3 text-white text-sm focus:border-emerald-500 focus:outline-none"
+            className="w-full h-9 bg-background border border-border rounded-md px-3 text-foreground text-sm focus:border-emerald-500 focus:outline-none"
             required
           >
             <option value="" disabled>
@@ -800,7 +817,7 @@ function ProductForm({
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Модель</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Модель</label>
           <Input
             placeholder="Pavilion, Envy, ROG..."
             value={formData.model}
@@ -810,7 +827,7 @@ function ProductForm({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Цена (₸)</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Цена (₸)</label>
           <Input
             placeholder="450000"
             value={formData.price}
@@ -820,7 +837,7 @@ function ProductForm({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Цена со скидкой (опц.)</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Цена со скидкой (опц.)</label>
           <Input
             placeholder="399000"
             value={formData.discountPrice}
@@ -829,7 +846,7 @@ function ProductForm({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Ссылка Kaspi.kz</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Ссылка Kaspi.kz</label>
           <Input
             placeholder="https://l.kaspi.kz/..."
             value={formData.kaspiLink}
@@ -838,11 +855,11 @@ function ProductForm({
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Категория</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Категория</label>
           <select
             value={formData.categoryId || ""}
             onChange={(e) => setFormData({ ...formData, categoryId: parseInt(e.target.value) || 0 })}
-            className="w-full h-9 bg-black border border-zinc-800 rounded-md px-3 text-white text-sm focus:border-emerald-500 focus:outline-none"
+            className="w-full h-9 bg-background border border-border rounded-md px-3 text-foreground text-sm focus:border-emerald-500 focus:outline-none"
             required
           >
             <option value="" disabled>
@@ -854,11 +871,11 @@ function ProductForm({
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Наличие</label>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Наличие</label>
           <select
             value={formData.availability}
             onChange={(e) => setFormData({ ...formData, availability: e.target.value as any })}
-            className="w-full h-9 bg-black border border-zinc-800 rounded-md px-3 text-white text-sm focus:border-emerald-500 focus:outline-none"
+            className="w-full h-9 bg-background border border-border rounded-md px-3 text-foreground text-sm focus:border-emerald-500 focus:outline-none"
           >
             <option value="in_stock">В наличии</option>
             <option value="out_of_stock">Нет в наличии</option>
@@ -868,7 +885,7 @@ function ProductForm({
       </div>
 
       {/* Dynamic Specs Section */}
-      <div className="space-y-4 border-t border-zinc-800 pt-5">
+      <div className="space-y-4 border-t border-border pt-5">
         <h4 className="text-sm font-bold text-emerald-400 uppercase tracking-widest">Характеристики</h4>
         <div className="grid md:grid-cols-2 gap-4">
           {getSelectedCategory()?.slug.includes("laptop") || getSelectedCategory()?.name.toLowerCase().includes("ноутбук") ? (
@@ -1027,7 +1044,7 @@ function ProductForm({
             </>
           ) : (
             <div className="col-span-2">
-              <p className="text-xs text-zinc-500 mb-2 italic">Для этой категории нет предустановленных полей. Используйте общее описание или добавьте характеристики вручную.</p>
+              <p className="text-xs text-muted-foreground mb-2 italic">Для этой категории нет предустановленных полей. Используйте общее описание или добавьте характеристики вручную.</p>
               <Button
                 type="button"
                 variant="outline"
@@ -1041,7 +1058,7 @@ function ProductForm({
                     });
                   }
                 }}
-                className="border-zinc-800 bg-transparent text-zinc-400 hover:text-emerald-400"
+                className="border-border bg-transparent text-muted-foreground hover:text-emerald-400"
               >
                 <Plus className="w-3.5 h-3.5 mr-2" />
                 Добавить поле
@@ -1055,7 +1072,7 @@ function ProductForm({
             if (standardKeys.includes(key)) return null;
             return (
               <div key={key}>
-                <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider flex justify-between">
+                <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider flex justify-between">
                   {key}
                   <button 
                     type="button" 
@@ -1080,19 +1097,19 @@ function ProductForm({
         </div>
       </div>
       <div>
-        <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Фото товара</label>
+        <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Фото товара</label>
         <div className="flex items-start gap-4">
           <div className="flex-1">
             <input
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="block w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20 file:cursor-pointer"
+              className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20 file:cursor-pointer"
             />
-            <p className="text-xs text-zinc-500 mt-2">JPG, PNG, WebP до 2 МБ</p>
+            <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP до 2 МБ</p>
           </div>
           {imagePreview && (
-            <img src={imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-zinc-800" />
+            <img src={imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-border" />
           )}
         </div>
       </div>
@@ -1120,7 +1137,7 @@ function ProductForm({
           type="button"
           onClick={onClose}
           variant="outline"
-          className="border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900"
+          className="border-border bg-transparent text-foreground hover:bg-accent"
         >
           Отмена
         </Button>
@@ -1153,7 +1170,7 @@ function CategoryForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Название</label>
+        <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Название</label>
         <Input
           placeholder="Игровые ноутбуки"
           value={formData.name}
@@ -1163,7 +1180,7 @@ function CategoryForm({
         />
       </div>
       <div>
-        <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Slug (для URL)</label>
+        <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Slug (для URL)</label>
         <Input
           placeholder="gaming-laptops"
           value={formData.slug}
@@ -1173,12 +1190,12 @@ function CategoryForm({
         />
       </div>
       <div>
-        <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Описание</label>
+        <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Описание</label>
         <textarea
           placeholder="Описание категории..."
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-          className="w-full bg-black border border-zinc-800 rounded-md px-3 py-2 text-white placeholder:text-zinc-600 focus:border-emerald-500 focus:outline-none text-sm"
+          className="w-full bg-background border border-border rounded-md px-3 py-2 text-foreground placeholder:text-muted-foreground focus:border-emerald-500 focus:outline-none text-sm"
           rows={3}
         />
       </div>
@@ -1194,7 +1211,7 @@ function CategoryForm({
           type="button"
           onClick={onClose}
           variant="outline"
-          className="border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900"
+          className="border-border bg-transparent text-foreground hover:bg-accent"
         >
           Отмена
         </Button>
@@ -1276,7 +1293,7 @@ function BrandForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Название бренда</label>
+        <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Название бренда</label>
         <Input
           placeholder="Apple, Samsung, ASUS..."
           value={formData.name}
@@ -1286,19 +1303,19 @@ function BrandForm({
         />
       </div>
       <div>
-        <label className="block text-xs font-medium text-zinc-400 mb-1.5 uppercase tracking-wider">Логотип бренда</label>
+        <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Логотип бренда</label>
         <div className="flex items-center gap-4">
           <input
             type="file"
             accept="image/*"
             onChange={handleLogoChange}
-            className="block w-full text-sm text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20 file:cursor-pointer"
+            className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20 file:cursor-pointer"
           />
           {logoPreview && (
-            <img src={logoPreview} alt="Preview" className="w-12 h-12 object-contain rounded-lg border border-zinc-800 p-1" />
+            <img src={logoPreview} alt="Preview" className="w-12 h-12 object-contain rounded-lg border border-border p-1" />
           )}
         </div>
-        <p className="text-xs text-zinc-500 mt-2">JPG, PNG, WebP до 2 МБ</p>
+        <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP до 2 МБ</p>
       </div>
       {imageToEdit && (
         <ImageEditor
@@ -1320,7 +1337,7 @@ function BrandForm({
           type="button"
           onClick={onClose}
           variant="outline"
-          className="border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900"
+          className="border-border bg-transparent text-foreground hover:bg-accent"
         >
           Отмена
         </Button>

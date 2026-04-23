@@ -1,7 +1,7 @@
-import { eq, desc, like, and, avg, count } from "drizzle-orm";
+import { eq, desc, like, and, avg, count, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
-import { InsertUser, users, products, categories, brands, cartItems, reviews, Product, Category, Brand, CartItem, Review, InsertProduct, InsertCategory, InsertBrand, InsertCartItem, InsertReview } from "../drizzle/schema";
+import { InsertUser, users, products, categories, brands, cartItems, reviews, Product, Category, Brand, CartItem, Review, InsertProduct, InsertCategory, InsertBrand, InsertCartItem, InsertReview, aiLogs, InsertAiLog } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -31,6 +31,23 @@ export async function getDb() {
 async function syncSchemaManually(client: any) {
   try {
     const tables = [
+      `CREATE TABLE IF NOT EXISTS "aiLogs" (
+        "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "userId" text,
+        "query" text NOT NULL,
+        "normalizedKey" text NOT NULL,
+        "aiUsed" integer NOT NULL,
+        "reason" text NOT NULL,
+        "confidenceScore" real,
+        "response" text NOT NULL,
+        "savings" integer DEFAULT 0 NOT NULL,
+        "abTestGroup" text DEFAULT 'optimized' NOT NULL,
+        "clickedProductId" integer,
+        "addedToCart" integer DEFAULT 0 NOT NULL,
+        "conversionValue" real DEFAULT 0,
+        "responseTime" integer,
+        "createdAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL
+      );`,
       `CREATE TABLE IF NOT EXISTS "brands" (
         "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
         "name" text NOT NULL,

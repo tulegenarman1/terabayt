@@ -5,10 +5,11 @@ import { Input } from "@/components/ui/input";
 import { 
   Search, ChevronLeft, ChevronRight, MessageCircle, 
   Package, Laptop, Smartphone, Printer, Home as HomeIcon,
-  ArrowRight, Star
+  ArrowRight, Star, Sun, Moon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const LOGO_URL = "/logo.jpeg";
 
@@ -22,6 +23,7 @@ const categoryIcons: Record<string, any> = {
 
 export default function Catalog() {
   const [, navigate] = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [selectedModel, setSelectedModel] = useState<string | null>(null);
@@ -86,9 +88,9 @@ export default function Catalog() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-xl border-b border-emerald-500/20">
+      <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-emerald-500/20">
         <div className="container flex items-center justify-between py-4">
           <button
             onClick={() => navigate("/")}
@@ -106,8 +108,19 @@ export default function Catalog() {
 
           <div className="flex items-center gap-2 md:gap-4">
             <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg border border-border hover:bg-accent transition-colors"
+              title={theme === "dark" ? "Светлая тема" : "Темная тема"}
+            >
+              {theme === "dark" ? (
+                <Sun className="w-4 h-4 text-yellow-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-emerald-600" />
+              )}
+            </button>
+            <button
               onClick={() => navigate("/")}
-              className="hidden md:inline-flex items-center gap-2 text-sm text-zinc-300 hover:text-emerald-400 transition-colors"
+              className="hidden md:inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-emerald-400 transition-colors"
             >
               <HomeIcon className="w-4 h-4" />
               Главная
@@ -138,7 +151,7 @@ export default function Catalog() {
             animate={{ opacity: 1, y: 0 }}
             className="mb-8"
           >
-            <div className="flex items-center gap-2 text-sm text-zinc-500 mb-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
               <button onClick={resetAll} className="hover:text-emerald-400 transition-colors">
                 Каталог
               </button>
@@ -199,13 +212,13 @@ export default function Catalog() {
               className="mb-8"
             >
               <div className="relative max-w-xl">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 pointer-events-none" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
                 <Input
                   type="text"
                   placeholder="Поиск по названию..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-12 h-12 bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-600 focus-visible:border-emerald-500 focus-visible:ring-emerald-500/20"
+                  className="pl-12 h-12 bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:border-emerald-500 focus-visible:ring-emerald-500/20"
                 />
               </div>
             </motion.div>
@@ -228,7 +241,7 @@ export default function Catalog() {
                     <button
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className="group bg-zinc-950 border border-zinc-800 hover:border-emerald-500/50 rounded-2xl p-8 transition-all text-left relative overflow-hidden"
+                      className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-8 transition-all text-left relative overflow-hidden"
                     >
                       <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
                         <Icon className="w-32 h-32" />
@@ -237,8 +250,8 @@ export default function Catalog() {
                         <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                           <Icon className="w-6 h-6 text-emerald-400" />
                         </div>
-                        <h3 className="text-2xl font-bold mb-2">{cat.name}</h3>
-                        <p className="text-zinc-500 text-sm mb-4">{cat.description}</p>
+                        <h3 className="text-2xl font-bold mb-2 text-foreground">{cat.name}</h3>
+                        <p className="text-muted-foreground text-sm mb-4">{cat.description}</p>
                         <div className="flex items-center text-emerald-400 text-sm font-semibold">
                           {count} товаров
                           <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
@@ -267,9 +280,9 @@ export default function Catalog() {
                     <button
                       key={brand.id}
                       onClick={() => setSelectedBrand(brand.name)}
-                      className="group bg-zinc-950 border border-zinc-800 hover:border-emerald-500/50 rounded-2xl p-6 md:p-8 transition-all flex flex-col items-center text-center relative overflow-hidden"
+                      className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-6 md:p-8 transition-all flex flex-col items-center text-center relative overflow-hidden"
                     >
-                      <div className="w-full aspect-square bg-zinc-900/50 rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
+                      <div className="w-full aspect-square bg-muted/50 rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
                         {brand.logo ? (
                           <img 
                             src={brand.logo} 
@@ -277,11 +290,11 @@ export default function Catalog() {
                             className="w-full h-full object-contain transition-all" 
                           />
                         ) : (
-                          <Star className="w-10 h-10 text-zinc-700" />
+                          <Star className="w-10 h-10 text-muted" />
                         )}
                       </div>
-                      <h3 className="font-bold text-lg mb-1">{brand.name}</h3>
-                      <p className="text-zinc-500 text-sm">{count} моделей</p>
+                      <h3 className="font-bold text-lg mb-1 text-foreground">{brand.name}</h3>
+                      <p className="text-muted-foreground text-sm">{count} моделей</p>
                     </button>
                   );
                 })}
@@ -308,9 +321,9 @@ export default function Catalog() {
                     <button
                       key={modelName}
                       onClick={() => setSelectedModel(modelName)}
-                      className="group bg-zinc-950 border border-zinc-800 hover:border-emerald-500/50 rounded-2xl p-6 md:p-8 transition-all flex flex-col items-center text-center relative overflow-hidden"
+                      className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-6 md:p-8 transition-all flex flex-col items-center text-center relative overflow-hidden"
                     >
-                      <div className="w-full aspect-square bg-zinc-900/50 rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
+                      <div className="w-full aspect-square bg-muted/50 rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
                         {representativeImage ? (
                           <img 
                             src={representativeImage} 
@@ -318,10 +331,10 @@ export default function Catalog() {
                             className="w-full h-full object-contain transition-all" 
                           />
                         ) : (
-                          <Package className="w-10 h-10 text-zinc-700" />
+                          <Package className="w-10 h-10 text-muted" />
                         )}
                       </div>
-                      <h3 className="font-bold text-lg mb-1">{modelName}</h3>
+                      <h3 className="font-bold text-lg mb-1 text-foreground">{modelName}</h3>
                       <p className="text-emerald-400 text-sm font-semibold">Смотреть детали</p>
                     </button>
                   );
@@ -356,13 +369,13 @@ function ProductCard({ product, onClick }: { product: any; onClick: () => void }
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       onClick={onClick}
-      className="group bg-zinc-950 border border-zinc-800 hover:border-emerald-500/50 rounded-2xl p-5 transition-all cursor-pointer relative overflow-hidden"
+      className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-5 transition-all cursor-pointer relative overflow-hidden"
     >
-      <div className="aspect-[4/3] bg-zinc-900/50 rounded-xl mb-4 flex items-center justify-center p-6 group-hover:scale-[1.02] transition-transform">
+      <div className="aspect-[4/3] bg-muted/50 rounded-xl mb-4 flex items-center justify-center p-6 group-hover:scale-[1.02] transition-transform">
         {product.images?.[0] ? (
           <img src={product.images[0]} alt={product.name} className="max-w-full max-h-full object-contain" />
         ) : (
-          <Laptop className="w-12 h-12 text-zinc-800" />
+          <Laptop className="w-12 h-12 text-muted" />
         )}
       </div>
       <div className="space-y-2">
@@ -371,22 +384,22 @@ function ProductCard({ product, onClick }: { product: any; onClick: () => void }
             {product.brand}
           </span>
           {product.availability === "in_stock" ? (
-            <span className="text-[10px] text-zinc-500">В наличии</span>
+            <span className="text-[10px] text-muted-foreground">В наличии</span>
           ) : (
             <span className="text-[10px] text-red-500">Под заказ</span>
           )}
         </div>
-        <h3 className="font-bold text-lg leading-tight line-clamp-2 group-hover:text-emerald-400 transition-colors">
+        <h3 className="font-bold text-lg leading-tight line-clamp-2 group-hover:text-emerald-400 transition-colors text-foreground">
           {product.name}
         </h3>
         <div className="pt-2 flex items-center justify-between">
           <div className="flex flex-col">
             {product.discountPrice && (
-              <span className="text-xs text-zinc-500 line-through">
+              <span className="text-xs text-muted-foreground line-through">
                 {Number(product.price).toLocaleString()} ₸
               </span>
             )}
-            <span className="text-xl font-black text-white">
+            <span className="text-xl font-black text-foreground">
               {Number(product.discountPrice || product.price).toLocaleString()} ₸
             </span>
           </div>

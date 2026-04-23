@@ -7,14 +7,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { 
-  Smartphone, Zap, Award, Phone, MapPin, Instagram, 
-  ChevronLeft, ChevronRight, Shield, Truck, Headphones,
+  Zap, Award, Phone, MapPin, Instagram, 
+  ChevronLeft, ChevronRight, Truck, Headphones,
   Wallet, CheckCircle2, MessageCircle, ArrowRight,
-  Plus, Minus, Star, Laptop, Printer, X, Sparkles, ChevronDown
+  Plus, Minus, Star, Laptop, X, Sparkles, ChevronDown, Sun, Moon
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const LOGO_URL = "/logo.jpeg";
 
@@ -51,8 +52,21 @@ const FAQ = [
   }
 ];
 
+function StatCard({ icon: Icon, title, description }: { icon: any, title: string, description: string }) {
+  return (
+    <div className="bg-card border border-border p-8 rounded-3xl hover:border-emerald-500/30 transition-all group">
+      <div className="w-14 h-14 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+        <Icon className="w-7 h-7 text-emerald-400" />
+      </div>
+      <h3 className="text-xl font-bold mb-4 text-foreground">{title}</h3>
+      <p className="text-muted-foreground leading-relaxed">{description}</p>
+    </div>
+  );
+}
+
 export default function Home() {
   const [, navigate] = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<"hits" | "new" | "sale">("hits");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
@@ -74,25 +88,37 @@ export default function Home() {
   }, [allProducts, activeTab]);
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300 overflow-hidden">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-xl border-b border-emerald-500/20">
+      <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-emerald-500/20">
         <div className="container flex items-center justify-between py-4">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3"
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => navigate("/")}
           >
             <img src={LOGO_URL} alt="Terabayt.kz" className="w-10 h-10 rounded-lg object-cover ring-2 ring-emerald-500/50" />
             <span className="text-xl font-bold tracking-tight">Terabayt<span className="text-emerald-400">.kz</span></span>
           </motion.div>
 
-          <div className="flex items-center gap-2 md:gap-6">
+          <div className="flex items-center gap-2 md:gap-4 lg:gap-6">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg border border-border hover:bg-accent transition-colors"
+              title={theme === "dark" ? "Светлая тема" : "Темная тема"}
+            >
+              {theme === "dark" ? (
+                <Sun className="w-4 h-4 text-yellow-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-emerald-600" />
+              )}
+            </button>
             <DropdownMenu>
-              <DropdownMenuTrigger className="text-xs md:text-sm text-zinc-400 hover:text-emerald-400 transition-colors font-bold flex items-center gap-1 outline-none">
+              <DropdownMenuTrigger className="text-xs md:text-sm text-muted-foreground hover:text-emerald-400 transition-colors font-bold flex items-center gap-1 outline-none">
                 Адреса <ChevronDown className="w-3 h-3" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800 text-white">
+              <DropdownMenuContent align="end" className="bg-card border-border text-foreground">
                 <DropdownMenuItem className="focus:bg-emerald-500/10 focus:text-emerald-400 cursor-pointer">
                   <a 
                     href="https://2gis.kz/almaty/geo/9430047375008939/76.857766,43.206241" 
@@ -101,7 +127,7 @@ export default function Home() {
                     className="flex flex-col gap-1 w-full"
                   >
                     <span className="font-bold">Алматы</span>
-                    <span className="text-xs text-zinc-400">ул. Сауранбаева, 5</span>
+                    <span className="text-xs text-muted-foreground">ул. Сауранбаева, 5</span>
                   </a>
                 </DropdownMenuItem>
                 <DropdownMenuItem className="focus:bg-emerald-500/10 focus:text-emerald-400 cursor-pointer">
@@ -112,14 +138,14 @@ export default function Home() {
                     className="flex flex-col gap-1 w-full"
                   >
                     <span className="font-bold">Шымкент (Аксу)</span>
-                    <span className="text-xs text-zinc-400">ул. Абылай Хана, 58А</span>
+                    <span className="text-xs text-muted-foreground">ул. Абылай Хана, 58А</span>
                   </a>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <button
               onClick={() => navigate("/catalog")}
-              className="text-sm md:text-base text-zinc-300 hover:text-emerald-400 transition-colors"
+              className="text-sm md:text-base text-muted-foreground hover:text-emerald-400 transition-colors"
             >
               Каталог
             </button>
@@ -173,7 +199,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto"
+            className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"
           >
             Поможем выбрать идеальное устройство под ваши задачи и бюджет.
             Рассрочка 0-0-24 через Kaspi. Доставка по всему Казахстану.
@@ -188,9 +214,9 @@ export default function Home() {
             <Button
               onClick={() => navigate("/catalog")}
               size="lg"
-              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-14 px-8 text-lg rounded-2xl gap-2 shadow-xl shadow-emerald-500/20"
+              className="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-black font-bold h-14 px-8 text-lg rounded-2xl gap-2 shadow-xl shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95"
             >
-              Перейти в каталог
+              Открыть каталог
               <ArrowRight className="w-5 h-5" />
             </Button>
           </motion.div>
@@ -210,7 +236,7 @@ export default function Home() {
               <h2 className="text-4xl md:text-6xl font-black mb-4">
                 Наши <span className="text-emerald-400">рекомендации</span>
               </h2>
-              <p className="text-zinc-500 text-lg">
+              <p className="text-muted-foreground text-lg">
                 Лучшие предложения, проверенные временем и нашими клиентами
               </p>
             </motion.div>
@@ -219,7 +245,7 @@ export default function Home() {
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="flex p-1.5 bg-zinc-900/50 backdrop-blur-md rounded-2xl border border-zinc-800"
+              className="flex p-1.5 bg-muted/50 backdrop-blur-md rounded-2xl border border-border"
             >
               {[
                 { id: "hits", label: "Хит", icon: Award },
@@ -232,7 +258,7 @@ export default function Home() {
                   className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
                     activeTab === tab.id
                       ? "bg-emerald-500 text-black shadow-lg shadow-emerald-500/20"
-                      : "text-zinc-400 hover:text-white hover:bg-white/5"
+                      : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                   }`}
                 >
                   <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? "text-black" : "text-emerald-400"}`} />
@@ -256,9 +282,9 @@ export default function Home() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   whileHover={{ y: -5 }}
                   onClick={() => navigate(`/product/${product.id}`)}
-                  className="group bg-zinc-950 border border-zinc-800 hover:border-emerald-500/50 rounded-3xl p-6 transition-all cursor-pointer relative overflow-hidden"
+                  className="group bg-card border border-border hover:border-emerald-500/50 rounded-3xl p-6 transition-all cursor-pointer relative overflow-hidden"
                 >
-                  <div className="aspect-[4/3] bg-zinc-900/50 rounded-2xl mb-6 flex items-center justify-center p-8 group-hover:scale-[1.02] transition-transform overflow-hidden">
+                  <div className="aspect-[4/3] bg-muted/50 rounded-2xl mb-6 flex items-center justify-center p-8 group-hover:scale-[1.02] transition-transform overflow-hidden">
                     {product.images?.[0] ? (
                       <img 
                         src={product.images[0]} 
@@ -266,7 +292,7 @@ export default function Home() {
                         className="max-w-full max-h-full object-contain" 
                       />
                     ) : (
-                      <Laptop className="w-16 h-16 text-zinc-800" />
+                      <Laptop className="w-16 h-16 text-muted" />
                     )}
                   </div>
 
@@ -276,7 +302,7 @@ export default function Home() {
                         {product.brand}
                       </span>
                       {product.availability === "in_stock" ? (
-                        <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider">
+                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
                           <CheckCircle2 className="w-3 h-3 text-emerald-500" />
                           В наличии
                         </div>
@@ -292,15 +318,15 @@ export default function Home() {
                     <div className="pt-2 flex items-center justify-between">
                       <div className="flex flex-col">
                         {product.discountPrice && (
-                          <span className="text-sm text-zinc-500 line-through">
+                          <span className="text-sm text-muted-foreground line-through">
                             {Number(product.price).toLocaleString()} ₸
                           </span>
                         )}
-                        <span className="text-2xl font-black text-white">
+                        <span className="text-2xl font-black text-foreground">
                           {Number(product.discountPrice || product.price).toLocaleString()} ₸
                         </span>
                       </div>
-                      <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl shadow-emerald-500/20">
+                      <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl shadow-emerald-500/20 hover:bg-emerald-400 transition-colors">
                         <ArrowRight className="w-6 h-6 text-black" />
                       </div>
                     </div>
@@ -320,7 +346,7 @@ export default function Home() {
               onClick={() => navigate("/catalog")}
               variant="outline"
               size="lg"
-              className="border-zinc-800 text-white hover:bg-white/5 rounded-2xl px-12 h-14 font-bold"
+              className="border-border text-foreground hover:bg-accent rounded-2xl px-12 h-14 font-bold"
             >
               Смотреть весь каталог
             </Button>
@@ -328,8 +354,46 @@ export default function Home() {
         </div>
       </section>
 
+      {/* WHY CHOOSE US SECTION */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-5xl font-black mb-6 text-foreground">
+              Почему выбирают <span className="text-emerald-400">нас</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Мы создаем лучший сервис для покупки электроники в Казахстане, 
+              сочетая качество товара с профессиональной поддержкой.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <StatCard 
+              icon={Zap}
+              title="Быстрая доставка"
+              description="Доставка по Алматы в день заказа. По всему Казахстану в кратчайшие сроки надежными курьерскими службами."
+            />
+            <StatCard 
+              icon={Award}
+              title="Гарантия качества"
+              description="Официальная гарантия 12 месяцев на всю технику. Мы работаем только с проверенными брендами и поставщиками."
+            />
+            <StatCard 
+              icon={Headphones}
+              title="Поддержка 24/7"
+              description="Наши консультанты всегда готовы помочь с выбором или настройкой вашей новой техники через WhatsApp или по телефону."
+            />
+          </div>
+        </div>
+      </section>
+
       {/* FAQ SECTION */}
-      <section className="py-24 relative bg-zinc-950/50 border-y border-zinc-900">
+      <section className="py-24 relative bg-accent/5 border-y border-border">
         <div className="container relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -337,11 +401,15 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-6xl font-black mb-4">Вопросы и <span className="text-emerald-400">ответы</span></h2>
-            <p className="text-zinc-500 text-lg">Часто задаваемые вопросы о нашей работе</p>
+            <h2 className="text-3xl md:text-5xl font-black mb-6 text-foreground">
+              Частые <span className="text-emerald-400">вопросы</span>
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Всё, что вам нужно знать о покупке и сервисе
+            </p>
           </motion.div>
 
-          <div className="max-w-3xl mx-auto space-y-4">
+          <div className="flex flex-col gap-4 max-w-3xl mx-auto">
             {FAQ.map((item, i) => (
               <motion.div
                 key={i}
@@ -349,45 +417,27 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className={`bg-black border transition-all duration-300 rounded-2xl overflow-hidden ${
-                  openFaq === i ? "border-emerald-500/50 shadow-lg shadow-emerald-500/5" : "border-zinc-800"
-                }`}
+                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                className="bg-card border border-border hover:border-emerald-500/30 rounded-2xl p-6 cursor-pointer transition-all group"
               >
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between p-6 md:p-8 text-left"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black transition-colors ${
-                      openFaq === i ? "bg-emerald-500 text-black" : "bg-emerald-500/10 text-emerald-400"
-                    }`}>
-                      {i + 1}
-                    </div>
-                    <h3 className={`text-xl font-bold transition-colors ${
-                      openFaq === i ? "text-white" : "text-zinc-300"
-                    }`}>
-                      {item.q}
-                    </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-foreground group-hover:text-emerald-400 transition-colors">
+                    {item.q}
+                  </h3>
+                  <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center group-hover:bg-emerald-500/10 transition-colors shrink-0 ml-4">
+                    {openFaq === i ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                   </div>
-                  <ChevronDown className={`w-6 h-6 text-zinc-500 transition-transform duration-300 ${
-                    openFaq === i ? "rotate-180 text-emerald-400" : ""
-                  }`} />
-                </button>
-                
+                </div>
                 <AnimatePresence>
                   {openFaq === i && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    <motion.p
+                      initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                      animate={{ height: "auto", opacity: 1, marginTop: 16 }}
+                      exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                      className="text-muted-foreground text-sm leading-relaxed overflow-hidden"
                     >
-                      <div className="px-6 md:px-8 pb-8 pt-0 ml-14">
-                        <p className="text-zinc-400 leading-relaxed text-lg">
-                          {item.a}
-                        </p>
-                      </div>
-                    </motion.div>
+                      {item.a}
+                    </motion.p>
                   )}
                 </AnimatePresence>
               </motion.div>
@@ -397,16 +447,16 @@ export default function Home() {
       </section>
 
       {/* SEO SECTION */}
-      <section className="py-16 bg-zinc-950 border-t border-zinc-900">
+      <section className="py-16 bg-muted/30 border-t border-border">
         <div className="container">
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            <h2 className="text-3xl md:text-5xl font-black text-white">
+            <h2 className="text-3xl md:text-5xl font-black text-foreground">
               О магазине <span className="text-emerald-400">Terabayt.kz</span>
             </h2>
-            <p className="text-zinc-400 text-base md:text-lg leading-relaxed max-w-3xl mx-auto">
+            <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-3xl mx-auto">
               Мы верим, что качественная техника должна быть доступной. В Terabayt.kz мы не просто продаем электронику — мы помогаем вам найти надежного помощника для работы, творчества и развлечений. Наша команда обеспечивает профессиональную поддержку, официальную гарантию и быструю доставку в любую точку Казахстана, чтобы вы могли наслаждаться покупкой без лишних забот.
             </p>
-            <p className="text-zinc-500 text-sm italic mt-4">
+            <p className="text-muted-foreground text-sm italic mt-4">
               Премиальный выбор ноутбуков, смартфонов и принтеров с профессиональным сервисом в Казахстане.
             </p>
           </div>
@@ -414,22 +464,22 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer id="contacts" className="py-20 border-t border-zinc-900 bg-black">
+      <footer id="contacts" className="py-20 border-t border-border bg-background">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <img src={LOGO_URL} alt="Terabayt.kz" className="w-12 h-12 rounded-xl object-cover ring-2 ring-emerald-500/20" />
-                <span className="text-2xl font-bold tracking-tight">Terabayt<span className="text-emerald-400">.kz</span></span>
+                <span className="text-2xl font-bold tracking-tight text-foreground">Terabayt<span className="text-emerald-400">.kz</span></span>
               </div>
-              <p className="text-zinc-500 leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed">
                 Ваш надежный партнер в мире премиальной техники. 
                 Премиальный выбор ноутбуков, смартфонов и принтеров с профессиональным сервисом в Казахстане.
               </p>
             </div>
 
             <div className="space-y-6">
-              <h4 className="text-lg font-bold text-white uppercase tracking-wider">Контакты</h4>
+              <h4 className="text-lg font-bold text-foreground uppercase tracking-wider">Контакты</h4>
               <ul className="space-y-4">
                 <li>
                   <a 
@@ -438,12 +488,12 @@ export default function Home() {
                     rel="noopener noreferrer"
                     className="flex items-start gap-3 group"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 transition-colors">
                       <MapPin className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">г. Алматы, ул. Сауранбаева, 5</p>
-                      <p className="text-xs text-zinc-500">Открыть в 2GIS</p>
+                      <p className="text-foreground font-medium group-hover:text-emerald-400 transition-colors">г. Алматы, ул. Сауранбаева, 5</p>
+                      <p className="text-xs text-muted-foreground">Открыть в 2GIS</p>
                     </div>
                   </a>
                 </li>
@@ -454,12 +504,12 @@ export default function Home() {
                     rel="noopener noreferrer"
                     className="flex items-start gap-3 group"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 transition-colors">
                       <MapPin className="w-5 h-5 text-emerald-400" />
                     </div>
                     <div>
-                      <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">г. Шымкент (Аксу), ул. Абылай Хана, 58А</p>
-                      <p className="text-xs text-zinc-500">Открыть в 2GIS</p>
+                      <p className="text-foreground font-medium group-hover:text-emerald-400 transition-colors">г. Шымкент (Аксу), ул. Абылай Хана, 58А</p>
+                      <p className="text-xs text-muted-foreground">Открыть в 2GIS</p>
                     </div>
                   </a>
                 </li>
@@ -470,17 +520,17 @@ export default function Home() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 group"
                   >
-                    <div className="w-10 h-10 rounded-lg bg-zinc-900 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 transition-colors">
-                      <MessageCircle className="w-5 h-5 text-emerald-400" />
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center shrink-0 group-hover:bg-emerald-500/10 transition-colors">
+                      <Phone className="w-5 h-5 text-emerald-400" />
                     </div>
-                    <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">+7 707 200 22 25</p>
+                    <p className="text-foreground font-medium group-hover:text-emerald-400 transition-colors">+7 707 200 22 25</p>
                   </a>
                 </li>
               </ul>
             </div>
 
             <div className="space-y-6">
-              <h4 className="text-lg font-bold text-white uppercase tracking-wider">Соцсети</h4>
+              <h4 className="text-lg font-bold text-foreground uppercase tracking-wider">Соцсети</h4>
               <div className="flex flex-col gap-4">
                 <a 
                   href="https://www.instagram.com/terabayt.kz_aksu?igsh=MThhMHVxMTdwdjkzNg==" 
@@ -488,12 +538,12 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 group"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-zinc-900 flex items-center justify-center hover:bg-emerald-500/10 hover:text-emerald-400 transition-all group">
-                    <Instagram className="w-6 h-6 text-zinc-400 group-hover:text-emerald-400" />
+                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center hover:bg-emerald-500/10 hover:text-emerald-400 transition-all group">
+                    <Instagram className="w-6 h-6 text-muted-foreground group-hover:text-emerald-400" />
                   </div>
                   <div>
-                    <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">terabayt.kz_aksu</p>
-                    <p className="text-xs text-zinc-500">Instagram</p>
+                    <p className="text-foreground font-medium group-hover:text-emerald-400 transition-colors">terabayt.kz_aksu</p>
+                    <p className="text-xs text-muted-foreground">Instagram</p>
                   </div>
                 </a>
                 <a 
@@ -502,23 +552,23 @@ export default function Home() {
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 group"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-zinc-900/50 border border-zinc-800 flex items-center justify-center hover:bg-emerald-500/10 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 group">
-                    <TikTokIcon className="w-7 h-7 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
+                  <div className="w-12 h-12 rounded-2xl bg-muted border border-border flex items-center justify-center hover:bg-emerald-500/10 hover:border-emerald-500/50 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all duration-300 group">
+                    <TikTokIcon className="w-7 h-7 text-muted-foreground group-hover:text-emerald-400 transition-colors" />
                   </div>
                   <div>
-                    <p className="text-zinc-300 font-medium group-hover:text-emerald-400 transition-colors">terabayt.kz</p>
-                    <p className="text-xs text-zinc-500">TikTok</p>
+                    <p className="text-foreground font-medium group-hover:text-emerald-400 transition-colors">terabayt.kz</p>
+                    <p className="text-xs text-muted-foreground">TikTok</p>
                   </div>
                 </a>
               </div>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-zinc-500 text-sm">© 2026 Terabayt.kz. Все права защищены.</p>
+          <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-muted-foreground text-sm">© 2026 Terabayt.kz. Все права защищены.</p>
             <div className="flex gap-6">
-              <button onClick={() => navigate("/catalog")} className="text-sm text-zinc-500 hover:text-emerald-400 transition-colors">Каталог</button>
-              <a href="https://wa.me/77072002225" className="text-sm text-zinc-500 hover:text-emerald-400 transition-colors">Помощь</a>
+              <button onClick={() => navigate("/catalog")} className="text-sm text-muted-foreground hover:text-emerald-400 transition-colors">Каталог</button>
+              <a href="https://wa.me/77072002225" className="text-sm text-muted-foreground hover:text-emerald-400 transition-colors">Помощь</a>
             </div>
           </div>
         </div>

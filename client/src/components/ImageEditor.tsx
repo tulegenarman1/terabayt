@@ -55,12 +55,12 @@ export default function ImageEditor({
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="sm:max-w-[600px] bg-zinc-950 border-zinc-800 text-white p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[600px] bg-card border-border text-foreground p-0 overflow-hidden">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle>Редактирование изображения</DialogTitle>
         </DialogHeader>
         <div className="p-6">
-          <div className="relative h-[400px] w-full bg-zinc-900 rounded-lg overflow-hidden">
+          <div className="relative h-[400px] w-full bg-muted rounded-lg overflow-hidden">
             <Cropper
               image={image}
               crop={crop}
@@ -74,10 +74,10 @@ export default function ImageEditor({
           <div className="mt-6 space-y-4">
             <div className="space-y-2">
               <div className="flex justify-between">
-                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   Масштаб
                 </label>
-                <span className="text-xs text-zinc-500">{zoom.toFixed(1)}x</span>
+                <span className="text-xs text-muted-foreground">{zoom.toFixed(1)}x</span>
               </div>
               <Slider
                 value={[zoom]}
@@ -94,7 +94,7 @@ export default function ImageEditor({
               type="button"
               variant="outline"
               onClick={onCancel}
-              className="border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-900"
+              className="border-border bg-transparent text-muted-foreground hover:bg-muted"
             >
               Отмена
             </Button>

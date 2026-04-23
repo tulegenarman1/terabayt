@@ -2,32 +2,34 @@ import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, MessageCircle, ShieldCheck, Truck, CreditCard,
-  Package, Home as HomeIcon, ChevronRight, Sparkles
+  Package, Home as HomeIcon, ChevronRight, Sparkles, Sun, Moon
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const LOGO_URL = "/logo.jpeg";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
+  const { theme, toggleTheme } = useTheme();
 
   const { data: product, isLoading } = trpc.products.getById.useQuery(parseInt(id || "0"));
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="animate-pulse text-zinc-500">Загрузка...</div>
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="animate-pulse text-muted-foreground">Загрузка...</div>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
-        <Package className="w-16 h-16 text-zinc-700 mb-4" />
-        <p className="text-xl text-zinc-400 mb-6">Товар не найден</p>
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-4">
+        <Package className="w-16 h-16 text-muted mb-4" />
+        <p className="text-xl text-muted-foreground mb-6">Товар не найден</p>
         <Button
           onClick={() => navigate("/catalog")}
           className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold"
@@ -47,9 +49,9 @@ export default function ProductDetail() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Navigation */}
-      <nav className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-xl border-b border-emerald-500/20">
+      <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-emerald-500/20">
         <div className="container flex items-center justify-between py-4">
           <button
             onClick={() => navigate("/")}
@@ -67,8 +69,19 @@ export default function ProductDetail() {
 
           <div className="flex items-center gap-2 md:gap-4">
             <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg border border-border hover:bg-accent transition-colors"
+              title={theme === "dark" ? "Светлая тема" : "Темная тема"}
+            >
+              {theme === "dark" ? (
+                <Sun className="w-4 h-4 text-yellow-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-emerald-600" />
+              )}
+            </button>
+            <button
               onClick={() => navigate("/catalog")}
-              className="hidden md:inline-flex items-center text-sm text-zinc-300 hover:text-emerald-400 transition-colors"
+              className="hidden md:inline-flex items-center text-sm text-muted-foreground hover:text-emerald-400 transition-colors"
             >
               Каталог
             </button>
@@ -93,7 +106,7 @@ export default function ProductDetail() {
       <div className="relative pt-24 pb-16">
         <div className="container">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm text-zinc-500 mb-6">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
             <button
               onClick={() => navigate("/")}
               className="hover:text-emerald-400 transition-colors inline-flex items-center gap-1"
@@ -116,7 +129,7 @@ export default function ProductDetail() {
 
           <button
             onClick={() => navigate("/catalog")}
-            className="inline-flex items-center gap-2 text-zinc-400 hover:text-emerald-400 transition-colors mb-6 text-sm"
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-emerald-400 transition-colors mb-6 text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             Назад в каталог
@@ -129,7 +142,7 @@ export default function ProductDetail() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
             >
-              <div className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden p-8 flex items-center justify-center min-h-[400px] md:min-h-[500px] relative">
+              <div className="bg-card border border-border rounded-2xl overflow-hidden p-8 flex items-center justify-center min-h-[400px] md:min-h-[500px] relative">
                 {discountPercent > 0 && (
                   <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-lg z-10">
                     -{discountPercent}%
@@ -142,7 +155,7 @@ export default function ProductDetail() {
                     className="max-w-full max-h-[450px] object-contain"
                   />
                 ) : (
-                  <div className="text-zinc-700 flex flex-col items-center gap-3">
+                  <div className="text-muted-foreground flex flex-col items-center gap-3">
                     <Package className="w-20 h-20" />
                     <span className="text-sm">Нет изображения</span>
                   </div>
@@ -183,36 +196,37 @@ export default function ProductDetail() {
                 </span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-black leading-tight">
-                {product.name}
-              </h1>
+              <h1 
+                className="text-3xl md:text-4xl font-black leading-tight"
+                dangerouslySetInnerHTML={{ __html: product.name }}
+              />
 
               {/* Price card */}
-              <div className="bg-gradient-to-br from-zinc-950 to-black border border-emerald-500/20 rounded-2xl p-6 relative overflow-hidden">
+              <div className="bg-card border border-border rounded-2xl p-6 relative overflow-hidden shadow-xl shadow-black/5">
                 <div className="absolute -top-20 -right-20 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl" />
                 <div className="relative">
                   {oldPrice && (
-                    <p className="text-zinc-500 line-through text-lg mb-1">
+                    <p className="text-muted-foreground line-through text-lg mb-1">
                       {oldPrice.toLocaleString()} ₸
                     </p>
                   )}
                   <div className="flex items-end gap-3">
-                    <p className="text-5xl font-black text-emerald-400 leading-none">
+                    <p className="text-5xl font-black text-emerald-500 leading-none">
                       {finalPrice.toLocaleString()}
                     </p>
-                    <p className="text-2xl font-bold text-emerald-400/70 mb-1">₸</p>
+                    <p className="text-2xl font-bold text-emerald-500/70 mb-1">₸</p>
                   </div>
                   {oldPrice && (
-                    <p className="text-sm text-zinc-400 mt-2">
+                    <p className="text-sm text-muted-foreground mt-2">
                       Экономия{" "}
-                      <span className="text-emerald-400 font-semibold">
+                      <span className="text-emerald-500 font-semibold">
                         {(oldPrice - finalPrice).toLocaleString()} ₸
                       </span>
                     </p>
                   )}
-                  <div className="mt-4 pt-4 border-t border-zinc-800">
-                    <p className="text-xs text-zinc-500 mb-1">Через Kaspi Red 0-0-24:</p>
-                    <p className="text-lg font-bold text-white">
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <p className="text-xs text-muted-foreground mb-1">Через Kaspi Red 0-0-24:</p>
+                    <p className="text-lg font-bold text-foreground">
                       {Math.round(finalPrice / 24).toLocaleString()} ₸/мес.
                     </p>
                   </div>
@@ -252,9 +266,9 @@ export default function ProductDetail() {
 
               {/* Description */}
               {product.description && (
-                <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+                <div className="bg-card border border-border rounded-2xl p-6">
                   <h3 className="font-bold text-lg mb-3">Описание</h3>
-                  <p className="text-zinc-400 leading-relaxed whitespace-pre-line">
+                  <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
                     {product.description}
                   </p>
                 </div>
@@ -274,36 +288,46 @@ export default function ProductDetail() {
                 <span className="w-1 h-8 bg-emerald-400 rounded-full" />
                 Характеристики
               </h2>
-              <div className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl shadow-black/50">
-                <div className="divide-y divide-zinc-900">
-                  {Object.entries(product.specs).map(([key, value]) => {
-                    const labels: Record<string, string> = {
-                      cpu: "Процессор",
-                      ram: "Оперативная память",
-                      storage: "Память",
-                      gpu: "Видеокарта",
-                      display: "Экран",
-                      os: "Операционная система",
-                      type: "Тип",
-                      color: "Цвет",
-                      speed: "Скорость печати",
-                      interface: "Интерфейс",
-                      format: "Формат печати",
-                    };
-                    return (
-                      <div
-                        key={key}
-                        className="grid grid-cols-2 sm:grid-cols-3 gap-4 px-6 py-4 hover:bg-zinc-900/30 transition-colors group"
-                      >
-                        <p className="text-zinc-500 font-medium group-hover:text-zinc-400 transition-colors">
-                          {labels[key] || key}
-                        </p>
-                        <p className="sm:col-span-2 font-semibold text-white group-hover:text-emerald-400 transition-colors">
-                          {String(value)}
-                        </p>
-                      </div>
-                    );
-                  })}
+              <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xl shadow-black/5">
+                <div className="divide-y divide-border">
+                  {Object.entries(product.specs)
+                    .sort(([a], [b]) => {
+                      const order = ["display", "cpu", "gpu", "storage", "ram", "os"];
+                      const indexA = order.indexOf(a);
+                      const indexB = order.indexOf(b);
+                      if (indexA === -1 && indexB === -1) return 0;
+                      if (indexA === -1) return 1;
+                      if (indexB === -1) return -1;
+                      return indexA - indexB;
+                    })
+                    .map(([key, value]) => {
+                      const labels: Record<string, string> = {
+                        cpu: "Процессор",
+                        ram: "Оперативная память",
+                        storage: "Память",
+                        gpu: "Видеокарта",
+                        display: "Экран",
+                        os: "Операционная система",
+                        type: "Тип",
+                        color: "Цвет",
+                        speed: "Скорость печати",
+                        interface: "Интерфейс",
+                        format: "Формат печати",
+                      };
+                      return (
+                        <div
+                          key={key}
+                          className="grid grid-cols-2 sm:grid-cols-3 gap-4 px-6 py-4 hover:bg-muted/50 transition-colors group"
+                        >
+                          <p className="text-muted-foreground font-medium group-hover:text-foreground transition-colors">
+                            {labels[key] || key}
+                          </p>
+                          <p className="sm:col-span-2 font-semibold text-foreground group-hover:text-emerald-500 transition-colors">
+                            {String(value)}
+                          </p>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             </motion.div>
@@ -321,7 +345,7 @@ export default function ProductDetail() {
                 <span className="w-1 h-8 bg-emerald-400 rounded-full" />
                 Видео обзор
               </h2>
-              <div className="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden aspect-video">
+              <div className="bg-card border border-border rounded-2xl overflow-hidden aspect-video">
                 <iframe
                   width="100%"
                   height="100%"
@@ -340,13 +364,13 @@ export default function ProductDetail() {
 
 function TrustItem({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle: string }) {
   return (
-    <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-3 flex items-center gap-3">
+    <div className="bg-card border border-border rounded-xl p-3 flex items-center gap-3 shadow-sm">
       <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
         <Icon className="w-4 h-4 text-emerald-400" />
       </div>
       <div className="min-w-0">
-        <p className="text-xs font-semibold text-white truncate">{title}</p>
-        <p className="text-xs text-zinc-500 truncate">{subtitle}</p>
+        <p className="text-xs font-semibold text-foreground truncate">{title}</p>
+        <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
       </div>
     </div>
   );

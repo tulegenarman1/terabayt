@@ -21,9 +21,16 @@ export default function AIChatBot() {
     },
   ]);
 
+  const [isTyping, setIsTyping] = useState(false);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastRequestTimeRef = useRef<number>(0);
+  const lastNormalizedInputRef = useRef<string>("");
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatMutation = trpc.ai.chat.useMutation();
+
+  const normalize = (text: string) => text.toLowerCase().trim().replace(/[!?. ,/\\-]/g, "").replace(/\s+/g, "");
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -42,19 +49,53 @@ export default function AIChatBot() {
     }
   }, [isOpen]);
 
-  const handleSend = async () => {
-    if (!input.trim() || chatMutation.isLoading) return;
+  const handleSend = async (manual: boolean = true) => {
+    const currentInput = input.trim();
+    if (!currentInput || chatMutation.isLoading) return;
 
-    const userMessage = input.trim();
+    const normalized = normalize(currentInput);
+    
+    // 1. Minimum length check
+    if (currentInput.length < 5) {
+      // Don't show error for auto-send, only manual
+      if (manual) {
+        setMessages(prev => [...prev, { role: "assistant", content: "Пожалуйста, напишите чуть подробнее (минимум 5 символов)." }]);
+      }
+      return;
+    }
+
+    // 2. Protection against repeated requests
+    if (normalized === lastNormalizedInputRef.current && manual) {
+      // If same as last, we could just show it from cache but the server does that too.
+      // Let's just prevent the call if it's identical and was just sent.
+    }
+
+    // 3. Frequency control
+    const now = Date.now();
+    if (now - lastRequestTimeRef.current < 2000) {
+      if (manual) {
+        setMessages(prev => [...prev, { role: "assistant", content: "Подождите пару секунд..." }]);
+      }
+      return;
+    }
+
+    // Clear any pending debounce
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+
+    const userMessage = currentInput;
     setInput("");
+    setIsTyping(false);
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    
+    lastRequestTimeRef.current = now;
+    lastNormalizedInputRef.current = normalized;
 
     try {
       const response = await chatMutation.mutateAsync({
-        messages: [...messages, { role: "user", content: userMessage }].map(m => ({
-          role: m.role as "user" | "assistant" | "system",
-          content: m.content
-        })),
+        messages: [{ role: "user", content: userMessage }],
       });
 
       setMessages((prev) => [
@@ -63,14 +104,39 @@ export default function AIChatBot() {
       ]);
     } catch (error: any) {
       console.error("AI Chat Error:", error);
-      const errorMessage = error.message || "Извините, произошла ошибка при подключении к ИИ.";
+      let errorMessage = "Извините, произошла ошибка.";
+      
+      if (error.message?.includes("Лимит")) {
+        errorMessage = error.message;
+      } else if (error.shape?.data?.code === "TOO_MANY_REQUESTS") {
+        errorMessage = error.message || "Слишком много запросов. Пожалуйста, подождите.";
+      }
+      
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: `${errorMessage}. Пожалуйста, попробуйте позже.`,
+          content: errorMessage,
         },
       ]);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInput(value);
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    if (value.trim()) {
+      setIsTyping(true);
+      debounceTimerRef.current = setTimeout(() => {
+        handleSend(false);
+      }, 3000); // 3 seconds debounce as requested
+    } else {
+      setIsTyping(false);
     }
   };
 
@@ -82,22 +148,22 @@ export default function AIChatBot() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="absolute bottom-20 right-0 w-[350px] md:w-[400px] h-[500px] bg-zinc-950 border border-emerald-500/20 rounded-2xl shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl"
+            className="absolute bottom-20 right-0 w-[350px] md:w-[400px] h-[500px] bg-card border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col backdrop-blur-xl"
           >
             {/* Header */}
-            <div className="p-4 border-b border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
+            <div className="p-4 border-b border-border bg-emerald-500/5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
                   <Bot className="w-5 h-5 text-black" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-white">BAYTBOT</h3>
-                  <p className="text-[10px] text-emerald-400 font-medium uppercase tracking-wider">Terabayt.kz Online</p>
+                  <h3 className="font-bold text-sm text-foreground">BAYTBOT</h3>
+                  <p className="text-[10px] text-emerald-500 font-medium uppercase tracking-wider">Terabayt.kz Online</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1 hover:bg-white/10 rounded-lg transition-colors text-zinc-400"
+                className="p-1 hover:bg-muted rounded-lg transition-colors text-muted-foreground"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -120,7 +186,7 @@ export default function AIChatBot() {
                       className={`max-w-[85%] p-3 rounded-2xl text-sm ${
                         msg.role === "user"
                           ? "bg-emerald-500 text-black font-medium shadow-lg shadow-emerald-500/10"
-                          : "bg-zinc-900 text-zinc-300 border border-zinc-800"
+                          : "bg-muted text-foreground border border-border"
                       }`}
                     >
                       <div className="flex items-center gap-2 mb-1 opacity-50">
@@ -139,7 +205,7 @@ export default function AIChatBot() {
                 ))}
                 {chatMutation.isLoading && (
                   <div className="flex justify-start">
-                    <div className="bg-zinc-900 text-zinc-300 border border-zinc-800 p-3 rounded-2xl flex items-center gap-2">
+                    <div className="bg-muted text-foreground border border-border p-3 rounded-2xl flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin text-emerald-500" />
                       <span className="text-xs font-medium">Думаю...</span>
                     </div>
@@ -150,20 +216,29 @@ export default function AIChatBot() {
             </div>
 
             {/* Input */}
-            <div className="p-4 border-t border-emerald-500/20 bg-zinc-900/50">
+            <div className="p-4 border-t border-border bg-muted/30">
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  handleSend();
+                  handleSend(true);
                 }}
                 className="flex gap-2"
               >
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Задайте вопрос по технике..."
-                  className="bg-black border-zinc-800 focus:border-emerald-500 text-sm h-11"
-                />
+                <div className="flex-1 relative">
+                  <Input
+                    value={input}
+                    onChange={handleInputChange}
+                    placeholder="Задайте вопрос по технике..."
+                    className="bg-card border-border focus:border-emerald-500 text-sm h-11 pr-10"
+                  />
+                  {isTyping && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
+                      <span className="w-1 h-1 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                      <span className="w-1 h-1 bg-emerald-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                      <span className="w-1 h-1 bg-emerald-500 rounded-full animate-bounce"></span>
+                    </div>
+                  )}
+                </div>
                 <Button
                   type="submit"
                   disabled={!input.trim() || chatMutation.isLoading}

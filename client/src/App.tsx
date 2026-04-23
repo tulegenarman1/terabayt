@@ -10,6 +10,7 @@ import ProductDetail from "./pages/ProductDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import AIChatBot from "@/components/AIChatBot";
+import { useLocation } from "wouter";
 
 function Router() {
   return (
@@ -31,15 +32,19 @@ function Router() {
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
+  const [location] = useLocation();
+  const isAdminPage = location.startsWith("/admin");
+
   return (
     <ErrorBoundary>
       <ThemeProvider
-        defaultTheme="dark"
+        defaultTheme="light"
+        switchable={true}
       >
         <TooltipProvider>
           <Toaster />
           <Router />
-          <AIChatBot />
+          {!isAdminPage && <AIChatBot />}
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

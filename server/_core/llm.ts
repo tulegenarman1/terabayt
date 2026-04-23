@@ -289,9 +289,9 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   const isOpenAI = ENV.openaiApiKey && ENV.openaiApiKey.startsWith("sk-");
   const isGemini = ENV.geminiApiKey && ENV.geminiApiKey.startsWith("AIza");
 
-  let model = "models/gemini-2.5-flash";
+  let model = "gemini-2.5-flash";
   if (isGemini) {
-    model = "models/gemini-2.5-flash";
+    model = "gemini-2.5-flash";
   } else if (isOpenAI) {
     model = "gpt-4o-mini";
   }

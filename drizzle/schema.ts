@@ -86,6 +86,31 @@ export const cartItems = sqliteTable("cartItems", {
 export type CartItem = typeof cartItems.$inferSelect;
 export type InsertCartItem = typeof cartItems.$inferInsert;
 
+export const aiLogs = sqliteTable("aiLogs", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  userId: text("userId"),
+  userIp: text("userId"), 
+  query: text("query").notNull(),
+  normalizedKey: text("normalizedKey").notNull(),
+  aiUsed: integer("aiUsed", { mode: 'boolean' }).notNull(),
+  reason: text("reason").notNull(),
+  confidenceScore: real("confidenceScore"),
+  response: text("response").notNull(),
+  savings: integer("savings").default(0).notNull(), 
+  abTestGroup: text("abTestGroup").default("optimized").notNull(),
+  
+  // New Analytics Fields
+  clickedProductId: integer("clickedProductId"),
+  addedToCart: integer("addedToCart", { mode: 'boolean' }).default(false).notNull(),
+  conversionValue: real("conversionValue").default(0),
+  responseTime: integer("responseTime"), // in ms
+  
+  createdAt: integer("createdAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
+});
+
+export type AiLog = typeof aiLogs.$inferSelect;
+export type InsertAiLog = typeof aiLogs.$inferInsert;
+
 // Relations
 export const categoriesRelations = relations(categories, ({ many }) => ({
   products: many(products),
