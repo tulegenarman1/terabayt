@@ -123,21 +123,7 @@ export default function AIChatBot() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInput(value);
-
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    if (value.trim()) {
-      setIsTyping(true);
-      debounceTimerRef.current = setTimeout(() => {
-        handleSend(false);
-      }, 3000); // 3 seconds debounce as requested
-    } else {
-      setIsTyping(false);
-    }
+    setInput(e.target.value);
   };
 
   return (
