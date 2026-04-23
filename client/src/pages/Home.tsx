@@ -284,12 +284,12 @@ export default function Home() {
                   onClick={() => navigate(`/product/${product.id}`)}
                   className="group bg-card border border-border hover:border-emerald-500/50 rounded-3xl p-6 transition-all cursor-pointer relative overflow-hidden"
                 >
-                  <div className="aspect-[4/3] bg-muted/50 rounded-2xl mb-6 flex items-center justify-center p-8 group-hover:scale-[1.02] transition-transform overflow-hidden">
+                  <div className="aspect-[4/3] bg-white rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-[1.05] transition-transform duration-300">
                     {product.images?.[0] ? (
                       <img 
                         src={product.images[0]} 
                         alt={product.name} 
-                        className="max-w-full max-h-full object-contain" 
+                        className="w-full h-full object-cover" 
                       />
                     ) : (
                       <Laptop className="w-16 h-16 text-muted" />

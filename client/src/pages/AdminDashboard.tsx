@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { 
   Plus, Trash2, Pencil, LogOut, Package, Tag, 
   ShieldCheck, Star, Search, X, Image as ImageIcon,
-  ChevronDown, ChevronUp, Sun, Moon
+  ChevronDown, ChevronUp, Sun, Moon, Download
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
@@ -677,7 +677,31 @@ function ProductForm({
   });
   const { data: categories = [] } = trpc.categories.list.useQuery();
   const { data: brands = [] } = trpc.brands.list.useQuery();
+  const scrapeKaspiMutation = trpc.admin.scrapeKaspiImage.useMutation();
+
   const getSelectedCategory = () => categories.find(c => c.id === formData.categoryId);
+
+  const handleKaspiLinkChange = (url: string) => {
+    setFormData(prev => ({ ...prev, kaspiLink: url }));
+  };
+
+  const handleFetchKaspiImage = async () => {
+    const url = formData.kaspiLink;
+    if (!url || !url.includes("kaspi.kz")) {
+      toast.error("Сначала вставьте корректную ссылку на Kaspi.kz");
+      return;
+    }
+
+    try {
+      const res = await scrapeKaspiMutation.mutateAsync({ url });
+      if (res.imageUrl) {
+        setImageToEdit(res.imageUrl);
+        toast.success("Фото получено из Kaspi");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Не удалось получить фото");
+    }
+  };
 
   const handleSpecChange = (name: string, value: string) => {
     setFormData(prev => ({
@@ -845,14 +869,34 @@ function ProductForm({
             className={inputClass}
           />
         </div>
-        <div>
+        <div className="space-y-1.5">
           <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Ссылка Kaspi.kz</label>
-          <Input
-            placeholder="https://l.kaspi.kz/..."
-            value={formData.kaspiLink}
-            onChange={(e) => setFormData({ ...formData, kaspiLink: e.target.value })}
-            className={inputClass}
-          />
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <Input
+                placeholder="https://kaspi.kz/shop/p/..."
+                value={formData.kaspiLink}
+                onChange={(e) => handleKaspiLinkChange(e.target.value)}
+                className={`${inputClass} pr-10`}
+              />
+              {scrapeKaspiMutation.isLoading && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
+            <Button
+              type="button"
+              onClick={handleFetchKaspiImage}
+              disabled={scrapeKaspiMutation.isLoading || !formData.kaspiLink}
+              className="bg-emerald-500 hover:bg-emerald-400 text-black px-3 h-9"
+              title="Загрузить первое фото товара с Kaspi"
+            >
+              <Download className="w-4 h-4 mr-1" />
+              Фото
+            </Button>
+          </div>
+          <p className="text-[10px] text-muted-foreground italic mt-1">Вставьте ссылку и нажмите «Фото», чтобы подтянуть изображение</p>
         </div>
         <div>
           <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Категория</label>
@@ -1097,7 +1141,10 @@ function ProductForm({
         </div>
       </div>
       <div>
-        <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Фото товара</label>
+        <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider flex justify-between">
+          Фото товара
+          <span className="text-[10px] lowercase font-normal italic">Рекомендуемый размер: 800x600 px</span>
+        </label>
         <div className="flex items-start gap-4">
           <div className="flex-1">
             <input
@@ -1106,10 +1153,16 @@ function ProductForm({
               onChange={handleImageChange}
               className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20 file:cursor-pointer"
             />
-            <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP до 2 МБ</p>
+            <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP до 2 МБ. Обрезка 4:3.</p>
           </div>
           {imagePreview && (
-            <img src={imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-border" />
+            <div className="w-32 h-24 relative rounded-lg border border-border overflow-visible bg-muted">
+              <img 
+                src={imagePreview} 
+                alt="Preview" 
+                className="w-full h-full object-contain" 
+              />
+            </div>
           )}
         </div>
       </div>
@@ -1118,7 +1171,7 @@ function ProductForm({
           image={imageToEdit}
           onCropComplete={handleCropComplete}
           onCancel={() => setImageToEdit(null)}
-          aspect={4/3}
+          aspect={800 / 600}
         />
       )}
       <div className="flex gap-3 pt-2">

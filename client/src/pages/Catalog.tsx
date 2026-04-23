@@ -369,11 +369,15 @@ function ProductCard({ product, onClick }: { product: any; onClick: () => void }
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       onClick={onClick}
-      className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-5 transition-all cursor-pointer relative overflow-hidden"
+      className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-5 transition-all cursor-pointer relative"
     >
-      <div className="aspect-[4/3] bg-muted/50 rounded-xl mb-4 flex items-center justify-center p-6 group-hover:scale-[1.02] transition-transform">
+      <div className="aspect-[4/3] w-full bg-white rounded-xl mb-4 flex items-center justify-center overflow-hidden group-hover:scale-[1.05] transition-transform duration-300">
         {product.images?.[0] ? (
-          <img src={product.images[0]} alt={product.name} className="max-w-full max-h-full object-contain" />
+          <img 
+            src={product.images[0]} 
+            alt={product.name} 
+            className="w-full h-full object-cover" 
+          />
         ) : (
           <Laptop className="w-12 h-12 text-muted" />
         )}

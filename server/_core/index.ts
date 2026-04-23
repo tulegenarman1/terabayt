@@ -91,14 +91,15 @@ async function startServer() {
       }
 
       console.log("Processing image with sharp...");
-      // Sharp Processing
+      // Sharp Processing - resized to 800x600 as requested
       const processedBuffer = await sharp(req.file.buffer)
         .resize({
-          width: 1600,
-          withoutEnlargement: true,
-          fit: "inside",
+          width: 800,
+          height: 600,
+          fit: "cover",
+          position: "center"
         })
-        .webp({ quality: 80 })
+        .webp({ quality: 85 })
         .toBuffer();
 
       console.log("Uploading to Cloudinary...");

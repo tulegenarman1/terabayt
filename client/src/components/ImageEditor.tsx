@@ -55,12 +55,12 @@ export default function ImageEditor({
 
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onCancel()}>
-      <DialogContent className="sm:max-w-[600px] bg-card border-border text-foreground p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-0">
+      <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] max-h-[90vh] bg-card border-border text-foreground p-0 overflow-hidden flex flex-col">
+        <DialogHeader className="p-6 pb-0 flex-shrink-0">
           <DialogTitle>Редактирование изображения</DialogTitle>
         </DialogHeader>
-        <div className="p-6">
-          <div className="relative h-[400px] w-full bg-muted rounded-lg overflow-hidden">
+        <div className="p-6 flex-1 flex flex-col min-h-0">
+          <div className="relative flex-1 w-full bg-muted rounded-lg overflow-hidden border border-border/50">
             <Cropper
               image={image}
               crop={crop}
@@ -69,9 +69,12 @@ export default function ImageEditor({
               onCropChange={onCropChange}
               onCropComplete={onCropCompleteInternal}
               onZoomChange={onZoomChange}
+              objectFit="contain"
+              minZoom={0.2}
+              restrictPosition={false}
             />
           </div>
-          <div className="mt-6 space-y-4">
+          <div className="mt-6 space-y-4 flex-shrink-0">
             <div className="space-y-2">
               <div className="flex justify-between">
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -81,9 +84,9 @@ export default function ImageEditor({
               </div>
               <Slider
                 value={[zoom]}
-                min={1}
+                min={0.2}
                 max={3}
-                step={0.1}
+                step={0.05}
                 onValueChange={(value) => setZoom(value[0])}
                 className="w-full"
               />

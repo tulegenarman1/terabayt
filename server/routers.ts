@@ -6,6 +6,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import * as db from "./db";
 import { nanoid } from "nanoid";
+import axios from "axios";
 
 import { ENV } from "./_core/env";
 import { invokeLLM, Message } from "./_core/llm";
@@ -150,6 +151,62 @@ export const appRouter = router({
       const adminToken = (ctx.req as any).cookies?.admin_token;
       return { authenticated: !!adminToken };
     }),
+
+    scrapeKaspiImage: adminProcedure
+      .input(z.object({ url: z.string().url() }))
+      .mutation(async ({ input }) => {
+        try {
+          const response = await axios.get(input.url, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            },
+            timeout: 5000
+          });
+
+          const html = response.data;
+          
+          // 1. Try OG image (most reliable for product pages)
+          const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i) ||
+                               html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i);
+          
+          if (ogImageMatch && ogImageMatch[1]) {
+            const imgUrl = ogImageMatch[1];
+            const imgResponse = await axios.get(imgUrl, { responseType: 'arraybuffer' });
+            const base64 = Buffer.from(imgResponse.data, 'binary').toString('base64');
+            const mimeType = imgResponse.headers['content-type'] || 'image/jpeg';
+            return { imageUrl: `data:${mimeType};base64,${base64}` };
+          }
+
+          // 2. Try Twitter image
+          const twitterImageMatch = html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i);
+          if (twitterImageMatch && twitterImageMatch[1]) {
+            const imgUrl = twitterImageMatch[1];
+            const imgResponse = await axios.get(imgUrl, { responseType: 'arraybuffer' });
+            const base64 = Buffer.from(imgResponse.data, 'binary').toString('base64');
+            const mimeType = imgResponse.headers['content-type'] || 'image/jpeg';
+            return { imageUrl: `data:${mimeType};base64,${base64}` };
+          }
+
+          // 3. Fallback: search for product image classes or IDs
+          // Kaspi often has images in galleries
+          const galleryMatch = html.match(/item__slider-image[^>]*src=["']([^"']+)["']/i);
+          if (galleryMatch && galleryMatch[1]) {
+            const imgUrl = galleryMatch[1];
+            const imgResponse = await axios.get(imgUrl, { responseType: 'arraybuffer' });
+            const base64 = Buffer.from(imgResponse.data, 'binary').toString('base64');
+            const mimeType = imgResponse.headers['content-type'] || 'image/jpeg';
+            return { imageUrl: `data:${mimeType};base64,${base64}` };
+          }
+
+          throw new Error("Изображение не найдено на странице");
+        } catch (error) {
+          console.error("[Scrape Error]", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Не удалось получить изображение по ссылке. Проверьте ссылку или загрузите фото вручную."
+          });
+        }
+      }),
   }),
 
   // Brands

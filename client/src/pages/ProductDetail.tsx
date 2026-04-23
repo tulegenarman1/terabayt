@@ -142,7 +142,7 @@ export default function ProductDetail() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
             >
-              <div className="bg-card border border-border rounded-2xl overflow-hidden p-8 flex items-center justify-center min-h-[400px] md:min-h-[500px] relative">
+              <div className="bg-card border border-border rounded-2xl p-4 md:p-8 flex items-center justify-center min-h-[300px] md:min-h-[500px] relative">
                 {discountPercent > 0 && (
                   <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-lg z-10">
                     -{discountPercent}%
@@ -152,7 +152,7 @@ export default function ProductDetail() {
                   <img
                     src={product.images[0]}
                     alt={product.name}
-                    className="max-w-full max-h-[450px] object-contain"
+                    className="w-full h-auto max-h-[500px] object-contain"
                   />
                 ) : (
                   <div className="text-muted-foreground flex flex-col items-center gap-3">
