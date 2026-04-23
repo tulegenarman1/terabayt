@@ -91,15 +91,20 @@ async function startServer() {
       }
 
       console.log("Processing image with sharp...");
-      // Sharp Processing - resized to 800x600 with transparency
+      // Sharp Processing - ensure transparency and high quality
       const processedBuffer = await sharp(req.file.buffer)
+        .ensureAlpha() // Ensure we have an alpha channel
         .resize({
           width: 800,
           height: 600,
           fit: "contain",
-          background: { r: 0, g: 0, b: 0, alpha: 0 } // Transparent background
+          background: { r: 255, g: 255, b: 255, alpha: 0 } // Fully transparent
         })
-        .webp({ quality: 85 })
+        .webp({ 
+          quality: 90,
+          lossless: false,
+          force: true 
+        })
         .toBuffer();
 
       console.log("Uploading to Cloudinary...");

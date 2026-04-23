@@ -22,6 +22,9 @@ export async function getCroppedImg(
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
 
+  // Clear canvas to ensure transparency
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   ctx.drawImage(
     image,
     pixelCrop.x,
