@@ -334,21 +334,6 @@ export default function ProductDetail() {
           )}
         </div>
       </div>
-
-      {/* Floating WhatsApp */}
-      <motion.a
-        href="https://wa.me/77072002225"
-        target="_blank"
-        rel="noopener noreferrer"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.5, type: "spring" }}
-        className="fixed bottom-6 left-6 z-40 w-14 h-14 bg-emerald-500 hover:bg-emerald-400 rounded-full flex items-center justify-center shadow-2xl shadow-emerald-500/40"
-        aria-label="WhatsApp"
-      >
-        <span className="absolute inset-0 rounded-full bg-emerald-500 animate-ping opacity-30" />
-        <MessageCircle className="w-7 h-7 text-black relative z-10" />
-      </motion.a>
     </div>
   );
 }
