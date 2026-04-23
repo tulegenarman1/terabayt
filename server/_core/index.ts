@@ -91,13 +91,13 @@ async function startServer() {
       }
 
       console.log("Processing image with sharp...");
-      // Sharp Processing - resized to 800x600 as requested
+      // Sharp Processing - resized to 800x600 with transparency
       const processedBuffer = await sharp(req.file.buffer)
         .resize({
           width: 800,
           height: 600,
-          fit: "cover",
-          position: "center"
+          fit: "contain",
+          background: { r: 0, g: 0, b: 0, alpha: 0 } // Transparent background
         })
         .webp({ quality: 85 })
         .toBuffer();

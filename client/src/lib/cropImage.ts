@@ -41,6 +41,6 @@ export async function getCroppedImg(
         return;
       }
       resolve(blob);
-    }, "image/jpeg");
+    }, "image/webp", 0.9);
   });
 }

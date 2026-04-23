@@ -371,7 +371,7 @@ function ProductCard({ product, onClick }: { product: any; onClick: () => void }
       onClick={onClick}
       className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-5 transition-all cursor-pointer relative"
     >
-      <div className="aspect-[4/3] w-full bg-white rounded-xl mb-4 flex items-center justify-center overflow-hidden group-hover:scale-[1.05] transition-transform duration-300">
+      <div className="aspect-[4/3] w-full bg-white dark:bg-black rounded-xl mb-4 flex items-center justify-center overflow-hidden group-hover:scale-[1.05] transition-transform duration-300">
         {product.images?.[0] ? (
           <img 
             src={product.images[0]} 
