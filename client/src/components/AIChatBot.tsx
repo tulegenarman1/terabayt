@@ -11,7 +11,7 @@ type Message = {
   content: string;
 };
 
-export function AIChatBot() {
+export default function AIChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Message[]>([
@@ -181,7 +181,7 @@ export function AIChatBot() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/20 group relative overflow-hidden"
+        className="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/20 group relative overflow-hidden"
       >
         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
         <AnimatePresence mode="wait">
@@ -202,7 +202,7 @@ export function AIChatBot() {
               exit={{ rotate: -90, opacity: 0 }}
               className="flex items-center justify-center"
             >
-              <Sparkles className="w-7 h-7 text-black relative z-10" />
+              <MessageCircle className="w-7 h-7 text-black relative z-10" />
             </motion.div>
           )}
         </AnimatePresence>
