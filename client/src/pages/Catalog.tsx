@@ -383,11 +383,11 @@ function ProductCard({ product, onClick }: { product: any; onClick: () => void }
           <div className="flex flex-col">
             {product.discountPrice && (
               <span className="text-xs text-zinc-500 line-through">
-                {Number(product.discountPrice).toLocaleString()} ₸
+                {Number(product.price).toLocaleString()} ₸
               </span>
             )}
             <span className="text-xl font-black text-white">
-              {Number(product.price).toLocaleString()} ₸
+              {Number(product.discountPrice || product.price).toLocaleString()} ₸
             </span>
           </div>
           <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-emerald-500/20">

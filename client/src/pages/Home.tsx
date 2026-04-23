@@ -35,19 +35,19 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 const FAQ = [
   {
     q: "Есть ли рассрочка?",
-    a: "Да, вы можете приобрести любой товар в рассрочку 0-0-12 через Kaspi Red, Kaspi Bank и Halyk Bank без переплат."
+    a: "Да, вы можете приобрести любой товар в рассрочку 0-0-24 через Kaspi Red, Kaspi Bank и Halyk Bank без переплат."
   },
   {
     q: "Какая гарантия на технику?",
-    a: "На все ноутбуки, смартфоны и принтеры предоставляется официальная гарантия сроком на 12 месяцев."
+    a: "На всю электронику, смартфоны и компьютерную технику предоставляется официальная гарантия сроком на 12 месяцев."
   },
   {
     q: "Как работает доставка?",
     a: "По Алматы доставка осуществляется день в день. По Казахстану отправляем курьерскими службами, срок доставки 2-5 рабочих дней."
   },
   {
-    q: "Помогаете ли вы с настройкой?",
-    a: "Да, при покупке ноутбука мы бесплатно установим Windows, драйверы и базовый пакет программ (Office, антивирус) в подарок."
+    q: "Предоставляете ли вы услуги по настройке техники?",
+    a: "Да, при покупке компьютера или ноутбука мы бесплатно установим Windows, драйверы и базовый пакет программ (Office, антивирус) в подарок."
   }
 ];
 
@@ -166,7 +166,7 @@ export default function Home() {
             className="text-5xl md:text-7xl font-black mb-6 leading-tight tracking-tight"
           >
             Terabayt.kz — интернет-магазин <br />
-            <span className="text-emerald-400">ноутбуков</span> в Казахстане
+            <span className="text-emerald-400">электроники</span> в Казахстане
           </motion.h1>
 
           <motion.p
@@ -176,7 +176,7 @@ export default function Home() {
             className="text-lg md:text-xl text-zinc-400 mb-10 max-w-2xl mx-auto"
           >
             Поможем выбрать идеальное устройство под ваши задачи и бюджет.
-            Рассрочка 0-0-12 через Kaspi. Доставка по всему Казахстану.
+            Рассрочка 0-0-24 через Kaspi. Доставка по всему Казахстану.
           </motion.p>
 
           <motion.div
@@ -293,11 +293,11 @@ export default function Home() {
                       <div className="flex flex-col">
                         {product.discountPrice && (
                           <span className="text-sm text-zinc-500 line-through">
-                            {Number(product.discountPrice).toLocaleString()} ₸
+                            {Number(product.price).toLocaleString()} ₸
                           </span>
                         )}
                         <span className="text-2xl font-black text-white">
-                          {Number(product.price).toLocaleString()} ₸
+                          {Number(product.discountPrice || product.price).toLocaleString()} ₸
                         </span>
                       </div>
                       <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl shadow-emerald-500/20">
@@ -404,7 +404,10 @@ export default function Home() {
               О магазине <span className="text-emerald-400">Terabayt.kz</span>
             </h2>
             <p className="text-zinc-400 text-base md:text-lg leading-relaxed max-w-3xl mx-auto">
-              Мы верим, что качественная техника должна быть доступной. В Terabayt.kz мы не просто продаем ноутбуки и смартфоны — мы помогаем вам найти надежного помощника для работы, творчества и развлечений. Наша команда обеспечивает профессиональную поддержку, официальную гарантию и быструю доставку в любую точку Казахстана, чтобы вы могли наслаждаться покупкой без лишних забот.
+              Мы верим, что качественная техника должна быть доступной. В Terabayt.kz мы не просто продаем электронику — мы помогаем вам найти надежного помощника для работы, творчества и развлечений. Наша команда обеспечивает профессиональную поддержку, официальную гарантию и быструю доставку в любую точку Казахстана, чтобы вы могли наслаждаться покупкой без лишних забот.
+            </p>
+            <p className="text-zinc-500 text-sm italic mt-4">
+              Премиальный выбор ноутбуков, смартфонов и принтеров с профессиональным сервисом в Казахстане.
             </p>
           </div>
         </div>
@@ -421,7 +424,7 @@ export default function Home() {
               </div>
               <p className="text-zinc-500 leading-relaxed">
                 Ваш надежный партнер в мире премиальной техники. 
-                Лучшие ноутбуки, смартфоны и сервис в Казахстане.
+                Премиальный выбор ноутбуков, смартфонов и принтеров с профессиональным сервисом в Казахстане.
               </p>
             </div>
 

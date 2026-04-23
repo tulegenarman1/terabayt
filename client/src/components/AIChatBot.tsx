@@ -17,7 +17,7 @@ export default function AIChatBot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Привет! Я ИИ-помощник Terabayt.kz. Помогу вам подобрать идеальный ноутбук или компьютерную технику. Что именно вы ищете?",
+      content: "Привет! Я BAYTBOT — ИИ-помощник Terabayt.kz. Помогу вам подобрать идеальную электронику или компьютерную технику. Что именно вы ищете?",
     },
   ]);
 
@@ -88,10 +88,10 @@ export default function AIChatBot() {
             <div className="p-4 border-b border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-emerald-500 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-black" />
+                  <Bot className="w-5 h-5 text-black" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-white">AI Помощник</h3>
+                  <h3 className="font-bold text-sm text-white">BAYTBOT</h3>
                   <p className="text-[10px] text-emerald-400 font-medium uppercase tracking-wider">Terabayt.kz Online</p>
                 </div>
               </div>
@@ -130,7 +130,7 @@ export default function AIChatBot() {
                           <Bot className="w-3 h-3" />
                         )}
                         <span className="text-[10px] uppercase font-bold tracking-tighter">
-                          {msg.role === "user" ? "Вы" : "AI Помощник"}
+                          {msg.role === "user" ? "Вы" : "BAYTBOT"}
                         </span>
                       </div>
                       <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>
@@ -161,7 +161,7 @@ export default function AIChatBot() {
                 <Input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Задайте вопрос по ноутбукам..."
+                  placeholder="Задайте вопрос по технике..."
                   className="bg-black border-zinc-800 focus:border-emerald-500 text-sm h-11"
                 />
                 <Button
@@ -178,12 +178,17 @@ export default function AIChatBot() {
       </AnimatePresence>
 
       <motion.button
-        whileHover={{ scale: 1.05 }}
+        initial="initial"
+        whileHover="hover"
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/20 group relative overflow-hidden"
+        className="w-14 h-14 rounded-full flex items-center justify-center shadow-xl shadow-emerald-500/20 group relative"
       >
-        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+        {/* Button Background with overflow-hidden for the hover effect */}
+        <div className="absolute inset-0 bg-emerald-500 rounded-full overflow-hidden">
+          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+        </div>
+        
         <AnimatePresence mode="wait">
           {isOpen ? (
             <motion.div
@@ -200,9 +205,64 @@ export default function AIChatBot() {
               initial={{ rotate: 90, opacity: 0 }}
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: -90, opacity: 0 }}
-              className="flex items-center justify-center"
+              className="flex items-center justify-center relative w-full h-full"
             >
-              <MessageCircle className="w-7 h-7 text-black relative z-10" />
+              <motion.div
+                animate={{ 
+                  y: [0, -3, 0],
+                }}
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="relative"
+              >
+                <motion.div
+                  variants={{
+                    initial: { rotate: 0, y: 0 },
+                    hover: { rotate: -15, y: -2 }
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                  className="relative"
+                >
+                  <Bot className="w-8 h-8 text-black relative z-10" />
+                  {/* Blinking Eyes Overlay */}
+                  <motion.div 
+                    animate={{ 
+                      scaleY: [0, 0, 1, 0, 0],
+                    }}
+                    transition={{ 
+                      duration: 4, 
+                      repeat: Infinity, 
+                      times: [0, 0.9, 0.95, 1, 1],
+                      ease: "easeInOut"
+                    }}
+                    className="absolute top-[11px] left-[7px] right-[7px] h-[6px] bg-emerald-500 z-20 origin-center"
+                  />
+                </motion.div>
+                <motion.span 
+                  variants={{
+                    initial: { opacity: 0, scale: 0, x: 0, y: 0 },
+                    hover: { opacity: 1, scale: 1, x: 8, y: -8 }
+                  }}
+                  className="absolute -top-2 left-1/2 -translate-x-1/2 text-white font-black text-lg pointer-events-none z-[120] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
+                >
+                  ?
+                </motion.span>
+              </motion.div>
+              <motion.div
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.3, 0, 0.3],
+                }}
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity, 
+                  ease: "easeInOut" 
+                }}
+                className="absolute inset-0 bg-white rounded-full"
+              />
             </motion.div>
           )}
         </AnimatePresence>
