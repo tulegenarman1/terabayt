@@ -146,7 +146,7 @@ const normalizeMessage = (message: Message) => {
 
     return {
       role,
-      name,
+      ...(name ? { name } : {}),
       tool_call_id,
       content,
     };
@@ -158,14 +158,14 @@ const normalizeMessage = (message: Message) => {
   if (contentParts.length === 1 && contentParts[0].type === "text") {
     return {
       role,
-      name,
+      ...(name ? { name } : {}),
       content: contentParts[0].text,
     };
   }
 
   return {
     role,
-    name,
+    ...(name ? { name } : {}),
     content: contentParts,
   };
 };
@@ -209,14 +209,21 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
+const resolveApiUrl = () => {
+  if (ENV.geminiApiKey && ENV.geminiApiKey.startsWith("AIza")) {
+    return `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions`;
+  }
+  if (ENV.openaiApiKey && ENV.openaiApiKey.startsWith("sk-")) {
+    return "https://api.openai.com/v1/chat/completions";
+  }
+  return ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
     ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
     : "https://forge.manus.im/v1/chat/completions";
+};
 
 const assertApiKey = () => {
-  if (!ENV.forgeApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
+  if (!ENV.forgeApiKey && !ENV.openaiApiKey && !ENV.geminiApiKey) {
+    throw new Error("API key is not configured");
   }
 };
 
@@ -279,8 +286,18 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     response_format,
   } = params;
 
+  const isOpenAI = ENV.openaiApiKey && ENV.openaiApiKey.startsWith("sk-");
+  const isGemini = ENV.geminiApiKey && ENV.geminiApiKey.startsWith("AIza");
+
+  let model = "models/gemini-2.5-flash";
+  if (isGemini) {
+    model = "models/gemini-2.5-flash";
+  } else if (isOpenAI) {
+    model = "gpt-4o-mini";
+  }
+
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model,
     messages: messages.map(normalizeMessage),
   };
 
@@ -296,9 +313,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
+  if (!isOpenAI) {
+    payload.max_tokens = 32768
+    payload.thinking = {
+      budget_tokens: 2048
+    }
   }
 
   const normalizedResponseFormat = normalizeResponseFormat({
@@ -308,25 +327,44 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     output_schema,
   });
 
-  if (normalizedResponseFormat) {
-    payload.response_format = normalizedResponseFormat;
+  if (!isOpenAI && !isGemini) {
+    payload.max_tokens = 32768
+    payload.thinking = {
+      budget_tokens: 2048
+    }
   }
 
-  const response = await fetch(resolveApiUrl(), {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  const url = resolveApiUrl();
+  console.log(`[LLM] Calling ${isGemini ? 'Gemini' : (isOpenAI ? 'OpenAI' : 'Forge')} API at ${url}`);
+  
+  try {
+    let apiKey = ENV.forgeApiKey;
+    if (isGemini) {
+      apiKey = ENV.geminiApiKey;
+    } else if (isOpenAI) {
+      apiKey = ENV.openaiApiKey;
+    }
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`
-    );
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[LLM] API Error (${response.status}):`, errorText);
+      throw new Error(`LLM API request failed with status ${response.status}: ${errorText}`);
+    }
+
+    const result = (await response.json()) as InvokeResult;
+    console.log(`[LLM] Success! Response ID: ${result.id}`);
+    return result;
+  } catch (error) {
+    console.error("[LLM] Unexpected error during API call:", error);
+    throw error;
   }
-
-  return (await response.json()) as InvokeResult;
 }

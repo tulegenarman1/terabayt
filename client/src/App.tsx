@@ -9,6 +9,7 @@ import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
+import { AIChatBot } from "./components/AIChatBot";
 
 function Router() {
   return (
@@ -38,6 +39,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <AIChatBot />
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

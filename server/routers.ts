@@ -8,6 +8,7 @@ import * as db from "./db";
 import { nanoid } from "nanoid";
 
 import { ENV } from "./_core/env";
+import { invokeLLM, Message } from "./_core/llm";
 
 // Admin procedure with server-side validation
 const adminProcedure = publicProcedure.use(({ ctx, next }) => {
@@ -260,6 +261,102 @@ export const appRouter = router({
           verified: false,
           helpful: 0,
         });
+      }),
+  }),
+
+  // AI Assistant
+  ai: router({
+    test: publicProcedure.mutation(async () => {
+      try {
+        console.log("[AI Test] Calling LLM...");
+        const response = await invokeLLM({
+          messages: [{ role: "user", content: "Привет! Ты работаешь?" }],
+        });
+        return { message: response.choices[0].message.content };
+      } catch (error: any) {
+        console.error("[AI Test] Error:", error);
+        return { error: error.message };
+      }
+    }),
+    chat: publicProcedure
+      .input(z.object({
+        messages: z.array(z.object({
+          role: z.enum(["user", "assistant", "system"]),
+          content: z.string(),
+        })),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          console.log("[AI Chat] Request received, fetching products...");
+          const products = await db.getAllProducts();
+          const categories = await db.getAllCategories();
+          
+          console.log(`[AI Chat] Found ${products.length} products and ${categories.length} categories`);
+
+          const productsContext = products.slice(0, 50).map(p => ({
+            name: p.name,
+            price: p.price,
+            brand: p.brand,
+            specs: p.specs ? (typeof p.specs === 'string' ? JSON.parse(p.specs) : p.specs) : {},
+            availability: p.availability,
+            link: `https://terabayt.kz/product/${p.id}`
+          }));
+
+          const systemPrompt = `Вы — эксперт-консультант магазина Terabayt.kz. Ваша задача — помочь пользователю подобрать идеальный ноутбук или компьютерную технику из нашего ассортимента, а также отвечать на вопросы о магазине.
+
+КОНТАКТНАЯ ИНФОРМАЦИЯ:
+- Адрес в Алматы: ул. Сауранбаева, 5
+- Адрес в Шымкенте (Аксу): ул. Абылай Хана, 58А
+- WhatsApp: +7 707 200 22 25
+- Instagram: @terabayt.kz_aksu
+- TikTok: @terabayt.kz
+
+ИНФОРМАЦИЯ О МАГАЗИНЕ:
+- Terabayt.kz — ведущий магазин компьютерной техники в Казахстане.
+- Рассрочка: 0-0-12 через Kaspi Red, Kaspi Bank и Halyk Bank без переплат.
+- Гарантия: Официальная гарантия 12 месяцев на все ноутбуки, смартфоны и принтеры.
+- Доставка: По Алматы — день в день. По Казахстану — 2-5 рабочих дней курьерскими службами.
+- Бонус: При покупке ноутбука бесплатно устанавливаем Windows, драйверы и базовый пакет программ (Office, антивирус) в подарок.
+
+ВАШИ ПРАВИЛА:
+1. Будьте вежливы, профессиональны и отвечайте максимально КРАТКО и по делу.
+2. Не пишите длинных приветствий или лишнего текста, если пользователь не просит подробного объяснения.
+3. Рекомендуйте только те товары, которые есть в нашем списке (контексте).
+4. Если пользователь спрашивает о чем-то, чего нет в ассортименте, вежливо сообщите об этом и предложите ближайшую альтернативу.
+5. Учитывайте бюджет пользователя и его цели (игры, работа, учеба, дизайн).
+6. Дайте краткое обоснование, почему вы рекомендуете именно эту модель.
+7. Отвечайте на языке пользователя (русский или казахский).
+8. Если вы рекомендуете товар, обязательно указывайте его цену и основные характеристики.
+9. Всегда предоставляйте контактные данные, если пользователь спрашивает, как с вами связаться или где вы находитесь.
+10. Подробные и длинные ответы давайте ТОЛЬКО если пользователь просит сравнить товары или детально рассказать о характеристиках.
+
+ДОСТУПНЫЕ ТОВАРЫ (первые 50):
+${JSON.stringify(productsContext, null, 2)}
+
+КАТЕГОРИИ:
+${categories.map(c => c.name).join(", ")}
+
+Начните диалог с приветствия, если это первое сообщение. Помогайте пользователю найти именно то, что ему нужно.`;
+
+          console.log("[AI Chat] Invoking LLM...");
+          const response = await invokeLLM({
+            messages: [
+              { role: "system", content: systemPrompt },
+              ...input.messages.map(m => ({ role: m.role as any, content: m.content }))
+            ],
+          });
+
+          console.log("[AI Chat] LLM response received successfully");
+          return {
+            message: response.choices[0].message.content,
+          };
+        } catch (error) {
+          console.error("[AI Chat] Error in mutation:", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: error instanceof Error ? error.message : "Произошла ошибка при работе с ИИ",
+          });
+        }
       }),
   }),
 });

@@ -12,4 +12,6 @@ export const ENV = {
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "dwuexc2nd",
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY ?? "862733166359546",
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET ?? "rJifF8hVeHJfEsqMNCBrmngF0DU",
+  openaiApiKey: process.env.OPENAI_API_KEY ?? "",
+  geminiApiKey: process.env.GEMINI_API_KEY ?? "",
 };
