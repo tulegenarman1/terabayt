@@ -406,6 +406,7 @@ export const appRouter = router({
       .input(z.object({
         name: z.string(),
         slug: z.string(),
+        icon: z.string().optional(),
         description: z.string().optional(),
       }))
       .mutation(({ input }) => {
@@ -417,6 +418,7 @@ export const appRouter = router({
         data: z.object({
           name: z.string().optional(),
           slug: z.string().optional(),
+          icon: z.string().optional(),
           description: z.string().optional(),
         }),
       }))

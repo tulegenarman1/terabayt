@@ -61,6 +61,7 @@ async function syncSchemaManually(client: any) {
         "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
         "name" text NOT NULL,
         "slug" text NOT NULL,
+        "icon" text,
         "description" text,
         "createdAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL,
         "updatedAt" integer DEFAULT (cast(strftime('%s', 'now') as integer)) NOT NULL
@@ -349,6 +350,7 @@ export async function createCategory(data: InsertCategory) {
   const values: any = {
     name: data.name || "",
     slug: data.slug || "",
+    icon: data.icon || null,
     description: data.description || null,
     createdAt: new Date(),
     updatedAt: new Date(),
