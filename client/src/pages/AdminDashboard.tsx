@@ -895,10 +895,11 @@ function ProductForm({
           <select
             value={formData.brandId || ""}
             onChange={(e) => {
-              const selectedBrand = brands.find(b => b.id === parseInt(e.target.value));
+              const val = e.target.value;
+              const selectedBrand = brands.find(b => String(b.id) === String(val));
               setFormData({ 
                 ...formData, 
-                brandId: parseInt(e.target.value) || 0,
+                brandId: val ? (isNaN(Number(val)) ? val : Number(val)) : 0,
                 brand: selectedBrand?.name || ""
               });
             }}

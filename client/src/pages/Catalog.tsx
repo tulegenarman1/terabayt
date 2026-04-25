@@ -72,9 +72,9 @@ export default function Catalog() {
     const brandIds = new Set(
       products
         .filter((p) => String(p.categoryId) === String(selectedCategory))
-        .map((p) => p.brandId)
+        .map((p) => Number(p.brandId))
     );
-    return brandsList.filter(b => brandIds.has(b.id));
+    return brandsList.filter(b => brandIds.has(Number(b.id)));
   }, [products, brandsList, selectedCategory]);
 
   const filteredProducts = useMemo(() => {
@@ -86,7 +86,7 @@ export default function Catalog() {
     if (selectedBrand) {
       const selectedBrandObj = brandsList.find(b => b.name === selectedBrand);
       if (selectedBrandObj) {
-        filtered = filtered.filter((p) => p.brandId === selectedBrandObj.id);
+        filtered = filtered.filter((p) => Number(p.brandId) === Number(selectedBrandObj.id));
       }
     }
     
