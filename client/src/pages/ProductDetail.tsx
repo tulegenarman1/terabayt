@@ -15,7 +15,7 @@ export default function ProductDetail() {
   const [, navigate] = useLocation();
   const { theme, toggleTheme } = useTheme();
 
-  const { data: product, isLoading } = trpc.products.getById.useQuery(parseInt(id || "0"));
+  const { data: product, isLoading } = trpc.products.getById.useQuery(id || "0");
   const { data: categories = [] } = trpc.categories.list.useQuery();
 
   if (isLoading) {
@@ -52,7 +52,12 @@ export default function ProductDetail() {
   const category = categories.find(c => String(c.id) === String(product.categoryId));
 
   return (
-    <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-background text-foreground transition-colors duration-300"
+    >
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-emerald-500/20">
         <div className="container flex items-center justify-between py-4">
@@ -282,7 +287,7 @@ export default function ProductDetail() {
                     className="w-full border-emerald-500/50 bg-transparent text-emerald-400 hover:bg-emerald-500/10 font-semibold py-6 text-base"
                   >
                     <MessageCircle className="w-5 h-5 mr-2" />
-                    { (product.categoryId === 1 || product.name.toLowerCase().includes("ноутбук")) && product.availability === "in_stock"
+                    { (String(product.categoryId) === "1" || product.name.toLowerCase().includes("ноутбук")) && product.availability === "in_stock"
                       ? "Купить в наличии" 
                       : "Спросить в WhatsApp" }
                   </Button>
@@ -315,7 +320,7 @@ export default function ProductDetail() {
               </h2>
               <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xl shadow-black/5">
                 <div className="divide-y divide-border">
-                  {Object.entries(product.specs)
+                  {product.specs && typeof product.specs === 'object' && Object.entries(product.specs)
                     .sort(([a], [b]) => {
                       const order = ["display", "cpu", "gpu", "storage", "ram", "os"];
                       const indexA = order.indexOf(a);
@@ -383,7 +388,7 @@ export default function ProductDetail() {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

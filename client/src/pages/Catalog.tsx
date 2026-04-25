@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { 
   Search, ChevronLeft, ChevronRight, MessageCircle, 
   Package, Laptop, Smartphone, Printer, Home as HomeIcon, 
-  ArrowRight, Star, Sun, Moon, Monitor, Mouse, Keyboard, Tablet, Speaker, Tv, Camera, Cpu, Tag
+  ArrowRight, ArrowLeft, Star, Sun, Moon, Monitor, Mouse, Keyboard, Tablet, Speaker, Tv, Camera, Cpu, Tag
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
@@ -14,6 +14,26 @@ import { useTheme } from "@/contexts/ThemeContext";
 const LOGO_URL = "/logo.jpeg";
 
 const brandLogos: Record<string, string> = {};
+
+// Animation variants
+const viewVariants = {
+  initial: { opacity: 0, x: 20 },
+  animate: { opacity: 1, x: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  exit: { opacity: 0, x: -20, transition: { duration: 0.3, ease: "easeIn" } }
+};
+
+const containerVariants = {
+  animate: {
+    transition: {
+      staggerChildren: 0.05
+    }
+  }
+};
+
+const itemVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+};
 
 // Icon mapping for display
 const categoryIconsMap: Record<string, any> = {
@@ -178,7 +198,6 @@ export default function Catalog() {
                   <button
                     onClick={() => {
                       setSelectedBrand(null);
-                      setSelectedModel(null);
                     }}
                     className="hover:text-emerald-400 transition-colors"
                   >
@@ -228,20 +247,22 @@ export default function Catalog() {
 
           <AnimatePresence mode="wait">
             {/* View: Categories */}
-            {!isLoading && !selectedCategory && (
+            {!isLoading && !selectedCategory && !selectedBrand && (
               <motion.div
                 key="categories"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                variants={viewVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
               >
                 {categories.map((cat) => {
                   const Icon = categoryIconsMap[cat.icon || "Package"] || Package;
                   const count = products.filter(p => String(p.categoryId) === String(cat.id)).length;
                   return (
-                    <button
+                    <motion.button
                       key={cat.id}
+                      variants={itemVariants}
                       onClick={() => setSelectedCategory(String(cat.id))}
                       className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-8 transition-all text-left relative overflow-hidden"
                     >
@@ -259,7 +280,7 @@ export default function Catalog() {
                           <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </div>
-                    </button>
+                    </motion.button>
                   );
                 })}
               </motion.div>
@@ -269,37 +290,61 @@ export default function Catalog() {
             {!isLoading && selectedCategory && !selectedBrand && (
               <motion.div
                 key="brands"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
+                variants={viewVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="space-y-6"
               >
-                {brands.map((brand) => {
-                  const brandProducts = products.filter((p) => p.brandId === brand.id && p.categoryId === selectedCategory);
-                  const count = brandProducts.length;
-                  
-                  return (
-                    <button
-                      key={brand.id}
-                      onClick={() => setSelectedBrand(brand.name)}
-                      className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-6 md:p-8 transition-all flex flex-col items-center text-center relative overflow-hidden"
-                    >
-                      <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
-                        {brand.logo ? (
-                          <img 
-                            src={brand.logo} 
-                            alt={brand.name} 
-                            className="w-full h-full object-contain transition-all" 
-                          />
-                        ) : (
-                          <Star className="w-10 h-10 text-muted" />
-                        )}
-                      </div>
-                      <h3 className="font-bold text-lg mb-1 text-foreground">{brand.name}</h3>
-                      <p className="text-muted-foreground text-sm">{count} товаров</p>
-                    </button>
-                  );
-                })}
+                <div className="flex items-center justify-between gap-4">
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl transition-all font-bold text-sm border border-emerald-500/20"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Назад к категориям
+                  </button>
+                  <div className="flex-1 text-right">
+                    <p className="text-muted-foreground text-sm">
+                      Выберите бренд в категории {currentCategoryName}
+                    </p>
+                  </div>
+                </div>
+
+                <motion.div 
+                  variants={containerVariants}
+                  initial="initial"
+                  animate="animate"
+                  className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
+                >
+                  {brands.map((brand) => {
+                    const brandProducts = products.filter((p) => String(p.brandId) === String(brand.id) && String(p.categoryId) === String(selectedCategory));
+                    const count = brandProducts.length;
+                    
+                    return (
+                      <motion.button
+                        key={brand.id}
+                        variants={itemVariants}
+                        onClick={() => setSelectedBrand(brand.name)}
+                        className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-6 md:p-8 transition-all flex flex-col items-center text-center relative overflow-hidden"
+                      >
+                        <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
+                          {brand.logo ? (
+                            <img 
+                              src={brand.logo} 
+                              alt={brand.name} 
+                              className="w-full h-full object-contain transition-all" 
+                            />
+                          ) : (
+                            <Star className="w-10 h-10 text-muted" />
+                          )}
+                        </div>
+                        <h3 className="font-bold text-lg mb-1 text-foreground">{brand.name}</h3>
+                        <p className="text-muted-foreground text-sm">{count} товаров</p>
+                      </motion.button>
+                    );
+                  })}
+                </motion.div>
               </motion.div>
             )}
 
@@ -307,13 +352,37 @@ export default function Catalog() {
             {!isLoading && selectedBrand && (
               <motion.div
                 key="products"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+                variants={viewVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="space-y-6"
               >
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} onClick={() => navigate(`/product/${product.id}`)} />
-                ))}
+                <div className="flex items-center justify-between gap-4">
+                  <button
+                    onClick={() => setSelectedBrand(null)}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl transition-all font-bold text-sm border border-emerald-500/20"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Назад к брендам
+                  </button>
+                  <div className="flex-1 text-right">
+                    <p className="text-muted-foreground text-sm">
+                      {filteredProducts.length} товаров в {selectedBrand}
+                    </p>
+                  </div>
+                </div>
+
+                <motion.div 
+                  variants={containerVariants}
+                  initial="initial"
+                  animate="animate"
+                  className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
+                  {filteredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} onClick={() => navigate(`/product/${product.id}`)} />
+                  ))}
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -327,9 +396,13 @@ function ProductCard({ product, onClick }: { product: any; onClick: () => void }
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      onClick={onClick}
+      variants={itemVariants}
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      whileTap={{ scale: 0.98 }}
+      onClick={() => {
+        // Небольшая задержка перед переходом для визуального фидбека клика
+        setTimeout(onClick, 50);
+      }}
       className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-5 transition-all cursor-pointer relative"
     >
       <div className="aspect-[4/3] w-full bg-white rounded-xl mb-4 flex items-center justify-center overflow-hidden group-hover:scale-[1.05] transition-transform duration-300">

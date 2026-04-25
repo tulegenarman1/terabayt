@@ -292,7 +292,7 @@ export const appRouter = router({
   // Brands
   brands: router({
     list: publicProcedure.query(() => db.getAllBrands()),
-    getById: publicProcedure.input(z.number()).query(({ input }) => db.getBrandById(input)),
+    getById: publicProcedure.input(z.coerce.number()).query(({ input }) => db.getBrandById(input)),
     create: adminProcedure
       .input(z.object({
         name: z.string(),
@@ -326,7 +326,7 @@ export const appRouter = router({
       }),
     update: adminProcedure
       .input(z.object({
-        id: z.number(),
+        id: z.coerce.number(),
         data: z.object({
           name: z.string().optional(),
           logo: z.string().optional(),
@@ -335,23 +335,23 @@ export const appRouter = router({
       }))
       .mutation(({ input }) => db.updateBrand(input.id, input.data)),
     delete: adminProcedure
-      .input(z.number())
+      .input(z.coerce.number())
       .mutation(({ input }) => db.deleteBrand(input)),
   }),
 
   // Products
   products: router({
     list: publicProcedure.query(() => db.getAllProducts()),
-    getById: publicProcedure.input(z.number()).query(({ input }) => db.getProductById(input)),
+    getById: publicProcedure.input(z.coerce.number()).query(({ input }) => db.getProductById(input)),
     getByCategory: publicProcedure.input(z.string()).query(({ input }) => db.getProductsByCategory(input)),
-    getByBrandId: publicProcedure.input(z.number()).query(({ input }) => db.getProductsByBrandId(input)),
-    getByModel: publicProcedure.input(z.object({ brandId: z.number(), model: z.string() })).query(({ input }) => db.getProductsByModel(input.brandId, input.model)),
+    getByBrandId: publicProcedure.input(z.coerce.number()).query(({ input }) => db.getProductsByBrandId(input)),
+    getByModel: publicProcedure.input(z.object({ brandId: z.coerce.number(), model: z.string() })).query(({ input }) => db.getProductsByModel(input.brandId, input.model)),
     search: publicProcedure.input(z.string().min(1).max(100)).query(({ input }) => db.searchProducts(input)),
     featured: publicProcedure.query(() => db.getFeaturedProducts()),
     create: adminProcedure
       .input(z.object({
         categoryId: z.string(),
-        brandId: z.number(),
+        brandId: z.coerce.number(),
         name: z.string(),
         brand: z.string(),
         model: z.string().optional(),
@@ -404,10 +404,10 @@ export const appRouter = router({
       }),
     update: adminProcedure
       .input(z.object({
-        id: z.number(),
+        id: z.coerce.number(),
         data: z.object({
           categoryId: z.string().optional(),
-          brandId: z.number().optional(),
+          brandId: z.coerce.number().optional(),
           name: z.string().optional(),
           brand: z.string().optional(),
           model: z.string().optional(),
@@ -426,7 +426,7 @@ export const appRouter = router({
         return db.updateProduct(input.id, input.data as any);
       }),
     delete: adminProcedure
-      .input(z.number())
+      .input(z.coerce.number())
       .mutation(({ input }) => {
         return db.deleteProduct(input);
       }),
@@ -435,7 +435,7 @@ export const appRouter = router({
       .mutation(({ input }) => db.updateAllKaspiLink(input)),
     toggleFeatured: adminProcedure
       .input(z.object({
-        id: z.number(),
+        id: z.coerce.number(),
         isFeatured: z.boolean(),
       }))
       .mutation(({ input }) => db.toggleFeatured(input.id, input.isFeatured)),
@@ -505,7 +505,7 @@ export const appRouter = router({
       .query(({ input }) => db.getCartItems(input)),
     addItem: publicProcedure
       .input(z.object({
-        productId: z.number(),
+        productId: z.coerce.number(),
         sessionId: z.string(),
         quantity: z.number().optional(),
       }))
@@ -516,12 +516,12 @@ export const appRouter = router({
       })),
     updateItem: publicProcedure
       .input(z.object({
-        id: z.number(),
+        id: z.coerce.number(),
         quantity: z.number(),
       }))
       .mutation(({ input }) => db.updateCartItem(input.id, input.quantity)),
     removeItem: publicProcedure
-      .input(z.number())
+      .input(z.coerce.number())
       .mutation(({ input }) => db.removeFromCart(input)),
     clear: publicProcedure
       .input(z.string())
@@ -531,14 +531,14 @@ export const appRouter = router({
   // Reviews
   reviews: router({
     getByProductId: publicProcedure
-      .input(z.number())
+      .input(z.coerce.number())
       .query(({ input }) => db.getReviewsByProductId(input)),
     getAverageRating: publicProcedure
-      .input(z.number())
+      .input(z.coerce.number())
       .query(({ input }) => db.getAverageRating(input)),
     create: publicProcedure
       .input(z.object({
-        productId: z.number(),
+        productId: z.coerce.number(),
         rating: z.number().min(1).max(5),
         title: z.string().min(1).max(255),
         comment: z.string().optional(),
