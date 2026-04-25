@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
   Search, ChevronLeft, ChevronRight, MessageCircle, 
-  Package, Laptop, Smartphone, Printer, Home as HomeIcon,
-  ArrowRight, Star, Sun, Moon
+  Package, Laptop, Smartphone, Printer, Home as HomeIcon, 
+  ArrowRight, Star, Sun, Moon, Monitor, Mouse, Keyboard, Tablet, Speaker, Tv, Camera, Cpu, Tag
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
@@ -15,10 +15,20 @@ const LOGO_URL = "/logo.jpeg";
 
 const brandLogos: Record<string, string> = {};
 
-const categoryIcons: Record<string, any> = {
-  "Ноутбуки": Laptop,
-  "Смартфоны": Smartphone,
-  "Принтеры": Printer,
+// Icon mapping for display
+const categoryIconsMap: Record<string, any> = {
+  Laptop,
+  Smartphone,
+  Printer,
+  Monitor,
+  Mouse,
+  Keyboard,
+  Tablet,
+  Speaker,
+  Tv,
+  Camera,
+  Cpu,
+  Tag
 };
 
 export default function Catalog() {
@@ -224,7 +234,7 @@ export default function Catalog() {
                 className="grid grid-cols-1 md:grid-cols-3 gap-6"
               >
                 {categories.map((cat) => {
-                  const Icon = categoryIcons[cat.name] || Package;
+                  const Icon = categoryIconsMap[cat.icon || "Package"] || Package;
                   const count = products.filter(p => p.categoryId === cat.id).length;
                   return (
                     <button

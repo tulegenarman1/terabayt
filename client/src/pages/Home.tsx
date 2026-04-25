@@ -10,7 +10,8 @@ import {
   Zap, Award, Phone, MapPin, Instagram, 
   ChevronLeft, ChevronRight, Truck, Headphones,
   Wallet, CheckCircle2, MessageCircle, ArrowRight,
-  Plus, Minus, Star, Laptop, X, Sparkles, ChevronDown, Sun, Moon
+  Plus, Minus, Star, Laptop, X, Sparkles, ChevronDown, Sun, Moon,
+  Smartphone, Printer, Monitor, Mouse, Keyboard, Tablet, Speaker, Tv, Camera, Cpu, Tag, Package
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useMemo } from "react";
@@ -18,6 +19,23 @@ import { trpc } from "@/lib/trpc";
 import { useTheme } from "@/contexts/ThemeContext";
 
 const LOGO_URL = "/logo.jpeg";
+
+// Icon mapping for display
+const categoryIconsMap: Record<string, any> = {
+  Laptop,
+  Smartphone,
+  Printer,
+  Monitor,
+  Mouse,
+  Keyboard,
+  Tablet,
+  Speaker,
+  Tv,
+  Camera,
+  Cpu,
+  Tag,
+  Package
+};
 
 const TikTokIcon = ({ className }: { className?: string }) => (
   <svg 
@@ -71,6 +89,7 @@ export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const { data: allProducts = [] } = trpc.products.list.useQuery();
+  const { data: categories = [] } = trpc.categories.list.useQuery();
 
   const filteredRecommendations = useMemo(() => {
     if (activeTab === "hits") {
@@ -220,6 +239,53 @@ export default function Home() {
               <ArrowRight className="w-5 h-5" />
             </Button>
           </motion.div>
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-24 relative overflow-hidden bg-accent/5">
+        <div className="container relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-6xl font-black mb-4 text-foreground">
+              Наши <span className="text-emerald-400">категории</span>
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Исследуйте широкий ассортимент электроники, от мощных ноутбуков до периферии
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+            {categories.map((cat) => {
+              const Icon = categoryIconsMap[cat.icon || "Package"] || Package;
+              const count = allProducts.filter(p => p.categoryId === cat.id).length;
+              return (
+                <motion.button
+                  key={cat.id}
+                  whileHover={{ y: -5 }}
+                  onClick={() => navigate(`/catalog?category=${cat.id}`)}
+                  className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-6 transition-all text-left relative overflow-hidden"
+                >
+                  <div className="absolute -right-2 -bottom-2 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+                    <Icon className="w-24 h-24" />
+                  </div>
+                  <div className="relative z-10">
+                    <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Icon className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <h3 className="text-lg font-bold mb-1 text-foreground">{cat.name}</h3>
+                    <p className="text-emerald-400 text-xs font-semibold">
+                      {count} товаров
+                    </p>
+                  </div>
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
       </section>
 

@@ -23,6 +23,7 @@ export const categories = sqliteTable("categories", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull().unique(),
   slug: text("slug").notNull().unique(),
+  icon: text("icon"), // Lucide icon name
   description: text("description"),
   createdAt: integer("createdAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),
   updatedAt: integer("updatedAt", { mode: 'timestamp' }).default(sql`(cast(strftime('%s', 'now') as integer))`).notNull(),

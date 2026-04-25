@@ -5,8 +5,39 @@ import { Input } from "@/components/ui/input";
 import { 
   Plus, Trash2, Pencil, LogOut, Package, Tag, 
   ShieldCheck, Star, Search, X, Image as ImageIcon,
-  ChevronDown, ChevronUp, Sun, Moon, Download
+  ChevronDown, ChevronUp, Sun, Moon, Download,
+  Laptop, Smartphone, Printer, Monitor, Mouse, Keyboard, Tablet, Speaker, Tv, Camera, Cpu
 } from "lucide-react";
+
+// Icon mapping for display
+const categoryIconsMap: Record<string, any> = {
+  Laptop,
+  Smartphone,
+  Printer,
+  Monitor,
+  Mouse,
+  Keyboard,
+  Tablet,
+  Speaker,
+  Tv,
+  Camera,
+  Cpu,
+  Tag // fallback
+};
+
+const iconOptions = [
+  { name: "Ноутбук", value: "Laptop", icon: Laptop },
+  { name: "Телефон", value: "Smartphone", icon: Smartphone },
+  { name: "Принтер", value: "Printer", icon: Printer },
+  { name: "Монитор", value: "Monitor", icon: Monitor },
+  { name: "Мышь", value: "Mouse", icon: Mouse },
+  { name: "Клавиатура", value: "Keyboard", icon: Keyboard },
+  { name: "Планшет", value: "Tablet", icon: Tablet },
+  { name: "Колонки", value: "Speaker", icon: Speaker },
+  { name: "Телевизор", value: "Tv", icon: Tv },
+  { name: "Камера", value: "Camera", icon: Camera },
+  { name: "Процессор/ПК", value: "Cpu", icon: Cpu },
+];
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -22,6 +53,7 @@ export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>("products");
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingCategory, setEditingCategory] = useState<any>(null);
   const [editingBrand, setEditingBrand] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -59,6 +91,11 @@ export default function AdminDashboard() {
 
   const handleEditProduct = (product: any) => {
     setEditingProduct(product);
+    setShowForm(true);
+  };
+
+  const handleEditCategory = (category: any) => {
+    setEditingCategory(category);
     setShowForm(true);
   };
 
@@ -385,11 +422,14 @@ export default function AdminDashboard() {
             <div className="flex justify-between items-center mb-6">
               <p className="text-muted-foreground">Управление категориями товаров</p>
               <Button
-                onClick={() => setShowForm(!showForm)}
+                onClick={() => {
+                  setEditingCategory(null);
+                  setShowForm(!showForm);
+                }}
                 className="bg-emerald-500 hover:bg-emerald-400 text-black font-semibold gap-2 shadow-lg shadow-emerald-500/20"
               >
                 <Plus className="w-4 h-4" />
-                {showForm ? "Закрыть" : "Добавить категорию"}
+                {showForm ? "Закрыть форму" : "Добавить категорию"}
               </Button>
             </div>
 
@@ -402,11 +442,29 @@ export default function AdminDashboard() {
                   className="overflow-hidden mb-6"
                 >
                   <div className="bg-card border border-emerald-500/30 rounded-2xl p-6">
-                    <h3 className="text-xl font-bold mb-6">Новая категория</h3>
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-bold">
+                        {editingCategory ? "Редактирование категории" : "Новая категория"}
+                      </h3>
+                      <button
+                        onClick={() => {
+                          setShowForm(false);
+                          setEditingCategory(null);
+                        }}
+                        className="text-muted-foreground hover:text-foreground p-1"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
                     <CategoryForm
-                      onClose={() => setShowForm(false)}
+                      editingCategory={editingCategory}
+                      onClose={() => {
+                        setShowForm(false);
+                        setEditingCategory(null);
+                      }}
                       onSuccess={() => {
                         setShowForm(false);
+                        setEditingCategory(null);
                         refetchCategories();
                       }}
                     />
@@ -416,31 +474,45 @@ export default function AdminDashboard() {
             </AnimatePresence>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {categories.map((category) => (
-                <div
-                  key={category.id}
-                  className="bg-card border border-border hover:border-emerald-500/30 rounded-xl p-5 transition-all group"
-                >
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-                      <Tag className="w-5 h-5 text-emerald-400" />
+              {categories.map((category) => {
+                const IconComp = categoryIconsMap[category.icon || "Tag"] || Tag;
+                return (
+                  <div
+                    key={category.id}
+                    className="bg-card border border-border hover:border-emerald-500/30 rounded-xl p-5 transition-all group"
+                  >
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                        <IconComp className="w-5 h-5 text-emerald-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-foreground truncate">{category.name}</h3>
+                        <p className="text-xs text-muted-foreground truncate">{category.description || "—"}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-foreground truncate">{category.name}</h3>
-                      <p className="text-xs text-muted-foreground truncate">{category.description || "—"}</p>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleEditCategory(category)}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 border-border bg-transparent text-muted-foreground hover:border-emerald-500 hover:text-emerald-400 gap-1.5"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                        Изменить
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteCategory(category.id)}
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 border-border bg-transparent text-muted-foreground hover:border-red-500 hover:text-red-400 gap-1.5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        Удалить
+                      </Button>
                     </div>
                   </div>
-                  <Button
-                    onClick={() => handleDeleteCategory(category.id)}
-                    size="sm"
-                    variant="outline"
-                    className="w-full border-border bg-transparent text-muted-foreground hover:border-red-500 hover:text-red-400 gap-1.5"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    Удалить
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
               {categories.length === 0 && (
                 <div className="col-span-full bg-card border border-border rounded-xl p-12 text-center text-muted-foreground">
                   Нет категорий
@@ -1200,23 +1272,39 @@ function ProductForm({
 }
 
 function CategoryForm({
+  editingCategory,
   onClose,
   onSuccess,
 }: {
+  editingCategory?: any;
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [formData, setFormData] = useState({ name: "", slug: "", description: "" });
+  const [formData, setFormData] = useState({ 
+    name: editingCategory?.name || "", 
+    slug: editingCategory?.slug || "", 
+    description: editingCategory?.description || "", 
+    icon: editingCategory?.icon || "Tag" 
+  });
   const createMutation = trpc.categories.create.useMutation();
+  const updateMutation = trpc.categories.update.useMutation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createMutation.mutateAsync(formData);
-      toast.success("Категория добавлена");
+      if (editingCategory) {
+        await updateMutation.mutateAsync({
+          id: editingCategory.id,
+          data: formData
+        });
+        toast.success("Категория обновлена");
+      } else {
+        await createMutation.mutateAsync(formData);
+        toast.success("Категория добавлена");
+      }
       onSuccess();
     } catch {
-      toast.error("Ошибка при добавлении");
+      toast.error("Ошибка при сохранении");
     }
   };
 
@@ -1243,6 +1331,30 @@ function CategoryForm({
         />
       </div>
       <div>
+        <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Иконка категории</label>
+        <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+          {iconOptions.map((opt) => {
+            const IconComp = opt.icon;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setFormData({ ...formData, icon: opt.value })}
+                className={`p-3 rounded-lg border transition-all flex flex-col items-center gap-1 ${
+                  formData.icon === opt.value
+                    ? "bg-emerald-500/20 border-emerald-500 text-emerald-400 shadow-lg shadow-emerald-500/10"
+                    : "bg-background border-border text-muted-foreground hover:border-emerald-500/50"
+                }`}
+                title={opt.name}
+              >
+                <IconComp className="w-5 h-5" />
+                <span className="text-[9px] uppercase font-bold truncate w-full">{opt.name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div>
         <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Описание</label>
         <textarea
           placeholder="Описание категории..."
@@ -1255,10 +1367,14 @@ function CategoryForm({
       <div className="flex gap-3 pt-2">
         <Button
           type="submit"
-          disabled={createMutation.isPending}
+          disabled={createMutation.isPending || updateMutation.isPending}
           className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold shadow-lg shadow-emerald-500/20"
         >
-          {createMutation.isPending ? "Сохранение..." : "Добавить категорию"}
+          {createMutation.isPending || updateMutation.isPending 
+            ? "Сохранение..." 
+            : editingCategory 
+            ? "Обновить категорию" 
+            : "Добавить категорию"}
         </Button>
         <Button
           type="button"
