@@ -299,7 +299,31 @@ export const appRouter = router({
         logo: z.string().optional(),
         description: z.string().optional(),
       }))
-      .mutation(({ input }) => db.createBrand(input)),
+      .mutation(async ({ input }) => {
+        try {
+          return await db.createBrand({
+            ...input,
+            name: input.name.trim(),
+          });
+        } catch (error: any) {
+          const errorMsg = error.message || "";
+          const causeMsg = error.cause?.message || "";
+          const fullError = `${errorMsg} ${causeMsg}`.toLowerCase();
+          
+          if (
+            fullError.includes("unique constraint failed") || 
+            fullError.includes("sqlite_constraint_unique") ||
+            error.code === "SQLITE_CONSTRAINT_UNIQUE" ||
+            error.cause?.code === "SQLITE_CONSTRAINT_UNIQUE"
+          ) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Бренд с таким названием уже существует."
+            });
+          }
+          throw error;
+        }
+      }),
     update: adminProcedure
       .input(z.object({
         id: z.number(),
@@ -341,23 +365,42 @@ export const appRouter = router({
         kaspiLink: z.string().optional(),
         featured: z.boolean().optional(),
       }))
-      .mutation(({ input }) => {
-        return db.createProduct({
-          categoryId: input.categoryId,
-          brandId: input.brandId,
-          name: input.name,
-          brand: input.brand,
-          model: input.model || "Standard",
-          price: input.price as any,
-          discountPrice: input.discountPrice as any,
-          description: input.description,
-          specs: input.specs,
-          images: input.images || [],
-          videoUrl: input.videoUrl,
-          availability: input.availability || "in_stock",
-          kaspiLink: input.kaspiLink,
-          featured: input.featured || false,
-        });
+      .mutation(async ({ input }) => {
+        try {
+          return await db.createProduct({
+            categoryId: input.categoryId,
+            brandId: input.brandId,
+            name: input.name.trim(),
+            brand: input.brand.trim(),
+            model: (input.model || "Standard").trim(),
+            price: input.price as any,
+            discountPrice: input.discountPrice as any,
+            description: input.description,
+            specs: input.specs,
+            images: input.images || [],
+            videoUrl: input.videoUrl,
+            availability: input.availability || "in_stock",
+            kaspiLink: input.kaspiLink,
+            featured: input.featured || false,
+          });
+        } catch (error: any) {
+          const errorMsg = error.message || "";
+          const causeMsg = error.cause?.message || "";
+          const fullError = `${errorMsg} ${causeMsg}`.toLowerCase();
+          
+          if (
+            fullError.includes("unique constraint failed") || 
+            fullError.includes("sqlite_constraint_unique") ||
+            error.code === "SQLITE_CONSTRAINT_UNIQUE" ||
+            error.cause?.code === "SQLITE_CONSTRAINT_UNIQUE"
+          ) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Товар с таким названием уже существует."
+            });
+          }
+          throw error;
+        }
       }),
     update: adminProcedure
       .input(z.object({
@@ -409,8 +452,31 @@ export const appRouter = router({
         icon: z.string().optional(),
         description: z.string().optional(),
       }))
-      .mutation(({ input }) => {
-        return db.createCategory(input);
+      .mutation(async ({ input }) => {
+        try {
+          return await db.createCategory({
+            ...input,
+            name: input.name.trim(),
+            slug: input.slug.trim(),
+          });
+        } catch (error: any) {
+          const errorMsg = error.message || "";
+          const causeMsg = error.cause?.message || "";
+          const fullError = `${errorMsg} ${causeMsg}`.toLowerCase();
+          
+          if (
+            fullError.includes("unique constraint failed") || 
+            fullError.includes("sqlite_constraint_unique") ||
+            error.code === "SQLITE_CONSTRAINT_UNIQUE" ||
+            error.cause?.code === "SQLITE_CONSTRAINT_UNIQUE"
+          ) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Категория с таким названием или ссылкой уже существует. Пожалуйста, измените существующую категорию вместо создания новой."
+            });
+          }
+          throw error;
+        }
       }),
     update: adminProcedure
       .input(z.object({

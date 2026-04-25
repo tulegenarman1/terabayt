@@ -126,6 +126,14 @@ async function syncSchemaManually(client: any) {
       await client.execute(sql);
     }
     
+    // Add missing icon column to categories if needed
+    const catInfo = await client.execute("PRAGMA table_info(categories)");
+    const hasIcon = catInfo.rows.some((r: any) => r.name === "icon");
+    if (!hasIcon) {
+      console.log("[Database] Adding missing 'icon' column to categories table");
+      await client.execute("ALTER TABLE categories ADD COLUMN icon text");
+    }
+
     // Add missing brandId column if needed
     const info = await client.execute("PRAGMA table_info(products)");
     const hasBrandId = info.rows.some((r: any) => r.name === "brandId");
@@ -221,15 +229,13 @@ export async function createBrand(data: InsertBrand) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const values: any = {
+  return db.insert(brands).values({
     name: data.name || "",
     logo: data.logo || null,
     description: data.description || null,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
-  
-  return db.insert(brands).values(values);
+  });
 }
 
 export async function updateBrand(id: number, data: Partial<InsertBrand>) {
@@ -294,8 +300,8 @@ export async function createProduct(data: InsertProduct) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // Extract fields and provide defaults to avoid 'undefined' and 'null' for ID
-  const values: any = {
+  // Use explicit values and avoid 'any' to ensure Drizzle handles ID correctly
+  return db.insert(products).values({
     categoryId: data.categoryId,
     brandId: data.brandId,
     name: data.name || "",
@@ -312,9 +318,7 @@ export async function createProduct(data: InsertProduct) {
     featured: data.featured ?? false,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
-  
-  return db.insert(products).values(values);
+  });
 }
 
 export async function updateProduct(id: number, data: Partial<InsertProduct>) {
@@ -347,16 +351,15 @@ export async function createCategory(data: InsertCategory) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const values: any = {
+  // Use explicit values and avoid 'any' to ensure Drizzle handles ID correctly
+  return db.insert(categories).values({
     name: data.name || "",
     slug: data.slug || "",
     icon: data.icon || null,
     description: data.description || null,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
-  
-  return db.insert(categories).values(values);
+  });
 }
 
 export async function updateCategory(id: number, data: Partial<InsertCategory>) {
@@ -385,15 +388,13 @@ export async function addToCart(data: InsertCartItem) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const values: any = {
+  return db.insert(cartItems).values({
     productId: data.productId,
     quantity: data.quantity ?? 1,
     sessionId: data.sessionId,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
-  
-  return db.insert(cartItems).values(values);
+  });
 }
 
 export async function updateCartItem(id: number, quantity: number) {
@@ -425,7 +426,7 @@ export async function createReview(review: InsertReview) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const values: any = {
+  return db.insert(reviews).values({
     productId: review.productId,
     rating: review.rating,
     title: review.title || "",
@@ -436,9 +437,7 @@ export async function createReview(review: InsertReview) {
     helpful: review.helpful ?? 0,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
-  
-  return db.insert(reviews).values(values);
+  });
 }
 
 export async function getAverageRating(productId: number) {
