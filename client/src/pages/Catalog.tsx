@@ -26,7 +26,6 @@ export default function Catalog() {
   const { theme, toggleTheme } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
-  const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: products = [], isLoading } = trpc.products.list.useQuery();
@@ -47,19 +46,6 @@ export default function Catalog() {
     return brandsList.filter(b => brandIds.has(b.id));
   }, [products, brandsList, selectedCategory]);
 
-  const models = useMemo(() => {
-    if (!selectedBrand || !selectedCategory) return [];
-    const selectedBrandObj = brandsList.find(b => b.name === selectedBrand);
-    if (!selectedBrandObj) return [];
-    
-    const modelSet = new Set(
-      products
-        .filter((p) => p.categoryId === selectedCategory && p.brandId === selectedBrandObj.id)
-        .map((p) => p.model)
-    );
-    return Array.from(modelSet).sort();
-  }, [products, selectedBrand, selectedCategory, brandsList]);
-
   const filteredProducts = useMemo(() => {
     let filtered = products;
     if (selectedCategory) filtered = filtered.filter((p) => p.categoryId === selectedCategory);
@@ -71,19 +57,17 @@ export default function Catalog() {
       }
     }
     
-    if (selectedModel) filtered = filtered.filter((p) => p.model === selectedModel);
     if (searchQuery) {
       filtered = filtered.filter((p) =>
         p.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     return filtered;
-  }, [products, selectedCategory, selectedBrand, selectedModel, searchQuery, brandsList]);
+  }, [products, selectedCategory, selectedBrand, searchQuery, brandsList]);
 
   const resetAll = () => {
     setSelectedCategory(null);
     setSelectedBrand(null);
-    setSelectedModel(null);
     setSearchQuery("");
   };
 
@@ -172,21 +156,8 @@ export default function Catalog() {
               {selectedBrand && (
                 <>
                   <ChevronRight className="w-4 h-4" />
-                  <button
-                    onClick={() => {
-                      setSelectedModel(null);
-                    }}
-                    className="hover:text-emerald-400 transition-colors"
-                  >
-                    {selectedBrand}
-                  </button>
-                </>
-              )}
-              {selectedModel && (
-                <>
-                  <ChevronRight className="w-4 h-4" />
                   <span className="text-emerald-400 font-medium">
-                    {selectedModel}
+                    {selectedBrand}
                   </span>
                 </>
               )}
@@ -196,10 +167,8 @@ export default function Catalog() {
                 <>Выберите <span className="text-emerald-400">категорию</span></>
               ) : !selectedBrand ? (
                 <>Бренды <span className="text-emerald-400">{currentCategoryName}</span></>
-              ) : !selectedModel ? (
-                <>Выберите модель <span className="text-emerald-400">{selectedBrand}</span></>
               ) : (
-                <>{selectedModel}</>
+                <>{selectedBrand} <span className="text-emerald-400">{currentCategoryName}</span></>
               )}
             </h1>
           </motion.div>
@@ -294,56 +263,15 @@ export default function Catalog() {
                         )}
                       </div>
                       <h3 className="font-bold text-lg mb-1 text-foreground">{brand.name}</h3>
-                      <p className="text-muted-foreground text-sm">{count} моделей</p>
+                      <p className="text-muted-foreground text-sm">{count} товаров</p>
                     </button>
                   );
                 })}
               </motion.div>
             )}
 
-            {/* View: Models */}
-            {!isLoading && selectedBrand && !selectedModel && (
-              <motion.div
-                key="models"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6"
-              >
-                {models.map((modelName) => {
-                  const selectedBrandObj = brandsList.find(b => b.name === selectedBrand);
-                  const modelProducts = products.filter(
-                    (p) => p.brandId === selectedBrandObj?.id && p.model === modelName && p.categoryId === selectedCategory
-                  );
-                  const representativeImage = modelProducts.find(p => p.images?.[0])?.images?.[0];
-                  
-                  return (
-                    <button
-                      key={modelName}
-                      onClick={() => setSelectedModel(modelName)}
-                      className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-6 md:p-8 transition-all flex flex-col items-center text-center relative overflow-hidden"
-                    >
-                      <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
-                        {representativeImage ? (
-                          <img 
-                            src={representativeImage} 
-                            alt={modelName} 
-                            className="w-full h-full object-contain transition-all" 
-                          />
-                        ) : (
-                          <Package className="w-10 h-10 text-muted" />
-                        )}
-                      </div>
-                      <h3 className="font-bold text-lg mb-1 text-foreground">{modelName}</h3>
-                      <p className="text-emerald-400 text-sm font-semibold">Смотреть детали</p>
-                    </button>
-                  );
-                })}
-              </motion.div>
-            )}
-
-            {/* View: Final Products (if multiple for one model) or Single Product List */}
-            {!isLoading && selectedModel && (
+            {/* View: Products (Directly after Brand) */}
+            {!isLoading && selectedBrand && (
               <motion.div
                 key="products"
                 initial={{ opacity: 0 }}
