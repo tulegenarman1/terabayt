@@ -38,8 +38,8 @@ export default function Catalog() {
 
   const queryParams = useMemo(() => new URLSearchParams(searchString), [searchString]);
   
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(
-    queryParams.get("category") ? parseInt(queryParams.get("category")!) : null
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    queryParams.get("category") || null
   );
   const [selectedBrand, setSelectedBrand] = useState<string | null>(
     queryParams.get("brand") || null

@@ -99,10 +99,10 @@ export default function AdminDashboard() {
     setShowForm(true);
   };
 
-  const handleDeleteCategory = async (id: number) => {
+  const handleDeleteCategory = async (id: any) => {
     if (!confirm("Удалить категорию?")) return;
     try {
-      await deleteCategoryMutation.mutateAsync(id);
+      await deleteCategoryMutation.mutateAsync(String(id));
       toast.success("Категория удалена");
       refetchCategories();
     } catch {
@@ -735,7 +735,7 @@ function ProductForm({
   onSuccess: () => void;
 }) {
   const [formData, setFormData] = useState({
-    categoryId: editingProduct?.categoryId || 0,
+    categoryId: editingProduct?.categoryId || "",
     brandId: editingProduct?.brandId || 0,
     name: editingProduct?.name || "",
     brand: editingProduct?.brand || "",
@@ -843,7 +843,7 @@ function ProductForm({
         await updateMutation.mutateAsync({
           id: editingProduct.id,
           data: {
-            categoryId: formData.categoryId,
+            categoryId: String(formData.categoryId),
             brandId: formData.brandId,
             name: formData.name,
             brand: formData.brand,
@@ -861,6 +861,7 @@ function ProductForm({
       } else {
         await createMutation.mutateAsync({
           ...formData,
+          categoryId: String(formData.categoryId),
           price: formData.price.toString(),
           discountPrice: formData.discountPrice ? formData.discountPrice.toString() : undefined,
           images: imageUrl ? [imageUrl] : [],
@@ -974,7 +975,7 @@ function ProductForm({
           <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">Категория</label>
           <select
             value={formData.categoryId || ""}
-            onChange={(e) => setFormData({ ...formData, categoryId: parseInt(e.target.value) || 0 })}
+            onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
             className="w-full h-9 bg-background border border-border rounded-md px-3 text-foreground text-sm focus:border-emerald-500 focus:outline-none"
             required
           >
@@ -1294,7 +1295,7 @@ function CategoryForm({
     try {
       if (editingCategory) {
         await updateMutation.mutateAsync({
-          id: editingCategory.id,
+          id: String(editingCategory.id),
           data: formData
         });
         toast.success("Категория обновлена");
