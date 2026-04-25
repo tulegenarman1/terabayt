@@ -322,7 +322,7 @@ export default function ProductDetail() {
                 <div className="divide-y divide-border">
                   {product.specs && typeof product.specs === 'object' && Object.entries(product.specs)
                     .sort(([a], [b]) => {
-                      const order = ["display", "cpu", "gpu", "storage", "ram", "os"];
+                      const order = ["display", "cpu", "gpu", "storage", "ram", "os", "camera", "battery", "sim", "nfc"];
                       const indexA = order.indexOf(a);
                       const indexB = order.indexOf(b);
                       if (indexA === -1 && indexB === -1) return 0;
@@ -334,10 +334,14 @@ export default function ProductDetail() {
                       const labels: Record<string, string> = {
                         cpu: "Процессор",
                         ram: "Оперативная память",
-                        storage: "Память",
+                        storage: "Встроенная память",
                         gpu: "Видеокарта",
                         display: "Экран",
                         os: "Операционная система",
+                        camera: "Камера",
+                        battery: "Аккумулятор",
+                        sim: "SIM-карты",
+                        nfc: "NFC",
                         type: "Тип",
                         color: "Цвет",
                         speed: "Скорость печати",

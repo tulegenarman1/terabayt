@@ -1121,6 +1121,34 @@ function ProductForm({
                   "Phantom Black", "Cream", "Green", "Lavender", "Sky Blue", "Graphite"
                 ]}
               />
+              <SpecInput
+                label="Камера"
+                name="camera"
+                value={formData.specs.camera}
+                onChange={handleSpecChange}
+                options={["12 Мп", "48 Мп", "50 Мп", "108 Мп", "200 Мп", "Тройная 50+50+50 Мп", "Тройная 48+12+12 Мп"]}
+              />
+              <SpecInput
+                label="Аккумулятор"
+                name="battery"
+                value={formData.specs.battery}
+                onChange={handleSpecChange}
+                options={["3000 мАч", "4000 мАч", "4500 мАч", "5000 мАч", "5500 мАч", "6000 мАч"]}
+              />
+              <SpecInput
+                label="SIM-карты"
+                name="sim"
+                value={formData.specs.sim}
+                onChange={handleSpecChange}
+                options={["1 SIM", "2 SIM", "SIM + eSIM", "Dual eSIM"]}
+              />
+              <SpecInput
+                label="NFC"
+                name="nfc"
+                value={formData.specs.nfc}
+                onChange={handleSpecChange}
+                options={["Есть", "Нет"]}
+              />
             </>
           ) : getSelectedCategory()?.slug.includes("printer") || getSelectedCategory()?.name.toLowerCase().includes("принтер") ? (
             <>
@@ -1162,31 +1190,34 @@ function ProductForm({
             </>
           ) : (
             <div className="col-span-2">
-              <p className="text-xs text-muted-foreground mb-2 italic">Для этой категории нет предустановленных полей. Используйте общее описание или добавьте характеристики вручную.</p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const key = prompt("Название характеристики (например, 'Материал'):");
-                  if (key) {
-                    setFormData({
-                      ...formData,
-                      specs: { ...formData.specs, [key]: "" }
-                    });
-                  }
-                }}
-                className="border-border bg-transparent text-muted-foreground hover:text-emerald-400"
-              >
-                <Plus className="w-3.5 h-3.5 mr-2" />
-                Добавить поле
-              </Button>
+              <p className="text-xs text-muted-foreground mb-2 italic text-center">Используйте общее описание или добавьте характеристики вручную.</p>
             </div>
           )}
+
+          <div className="col-span-2 flex justify-center pb-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const key = prompt("Название характеристики (например, 'Материал' или 'Вес'):");
+                if (key) {
+                  setFormData({
+                    ...formData,
+                    specs: { ...formData.specs, [key]: "" }
+                  });
+                }
+              }}
+              className="border-border bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 border-dashed"
+            >
+              <Plus className="w-3.5 h-3.5 mr-2" />
+              Добавить свою характеристику
+            </Button>
+          </div>
           
           {/* Custom specs that might have been added */}
           {Object.entries(formData.specs).map(([key, value]) => {
-            const standardKeys = ["cpu", "ram", "storage", "gpu", "display", "os", "type", "color", "speed", "interface"];
+            const standardKeys = ["cpu", "ram", "storage", "gpu", "display", "os", "type", "color", "speed", "interface", "camera", "battery", "sim", "nfc", "format"];
             if (standardKeys.includes(key)) return null;
             return (
               <div key={key}>
