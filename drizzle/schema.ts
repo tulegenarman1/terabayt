@@ -20,7 +20,7 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
 export const categories = sqliteTable("categories", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
+  id: text("id").primaryKey(),
   name: text("name").notNull().unique(),
   slug: text("slug").notNull().unique(),
   icon: text("icon"), // Lucide icon name
@@ -46,7 +46,7 @@ export type InsertBrand = typeof brands.$inferInsert;
 
 export const products = sqliteTable("products", {
   id: integer("id").primaryKey({ autoIncrement: true }),
-  categoryId: integer("categoryId").notNull(),
+  categoryId: text("categoryId").notNull(),
   brandId: integer("brandId").notNull(),
   name: text("name").notNull(),
   brand: text("brand").notNull(), // Legacy field, kept for compatibility or can be removed after migration

@@ -343,14 +343,14 @@ export const appRouter = router({
   products: router({
     list: publicProcedure.query(() => db.getAllProducts()),
     getById: publicProcedure.input(z.number()).query(({ input }) => db.getProductById(input)),
-    getByCategory: publicProcedure.input(z.number()).query(({ input }) => db.getProductsByCategory(input)),
+    getByCategory: publicProcedure.input(z.string()).query(({ input }) => db.getProductsByCategory(input)),
     getByBrandId: publicProcedure.input(z.number()).query(({ input }) => db.getProductsByBrandId(input)),
     getByModel: publicProcedure.input(z.object({ brandId: z.number(), model: z.string() })).query(({ input }) => db.getProductsByModel(input.brandId, input.model)),
     search: publicProcedure.input(z.string().min(1).max(100)).query(({ input }) => db.searchProducts(input)),
     featured: publicProcedure.query(() => db.getFeaturedProducts()),
     create: adminProcedure
       .input(z.object({
-        categoryId: z.number(),
+        categoryId: z.string(),
         brandId: z.number(),
         name: z.string(),
         brand: z.string(),
@@ -406,7 +406,7 @@ export const appRouter = router({
       .input(z.object({
         id: z.number(),
         data: z.object({
-          categoryId: z.number().optional(),
+          categoryId: z.string().optional(),
           brandId: z.number().optional(),
           name: z.string().optional(),
           brand: z.string().optional(),
@@ -444,7 +444,7 @@ export const appRouter = router({
   // Categories
   categories: router({
     list: publicProcedure.query(() => db.getAllCategories()),
-    getById: publicProcedure.input(z.number()).query(({ input }) => db.getCategoryById(input)),
+    getById: publicProcedure.input(z.string()).query(({ input }) => db.getCategoryById(input)),
     create: adminProcedure
       .input(z.object({
         name: z.string(),
@@ -480,7 +480,7 @@ export const appRouter = router({
       }),
     update: adminProcedure
       .input(z.object({
-        id: z.number(),
+        id: z.string(),
         data: z.object({
           name: z.string().optional(),
           slug: z.string().optional(),
@@ -492,7 +492,7 @@ export const appRouter = router({
         return db.updateCategory(input.id, input.data);
       }),
     delete: adminProcedure
-      .input(z.number())
+      .input(z.string())
       .mutation(({ input }) => {
         return db.deleteCategory(input);
       }),

@@ -1,3 +1,4 @@
+import { nanoid } from "nanoid";
 import { eq, desc, like, and, avg, count, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
@@ -58,7 +59,7 @@ async function syncSchemaManually(client: any) {
       );`,
       `CREATE UNIQUE INDEX IF NOT EXISTS "brands_name_unique" ON "brands" ("name");`,
       `CREATE TABLE IF NOT EXISTS "categories" (
-        "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+        "id" text PRIMARY KEY NOT NULL,
         "name" text NOT NULL,
         "slug" text NOT NULL,
         "icon" text,
@@ -70,7 +71,7 @@ async function syncSchemaManually(client: any) {
       `CREATE UNIQUE INDEX IF NOT EXISTS "categories_slug_unique" ON "categories" ("slug");`,
       `CREATE TABLE IF NOT EXISTS "products" (
         "id" integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-        "categoryId" integer NOT NULL,
+        "categoryId" text NOT NULL,
         "brandId" integer NOT NULL DEFAULT 0,
         "name" text NOT NULL,
         "brand" text NOT NULL,
@@ -264,7 +265,7 @@ export async function getProductById(id: number) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-export async function getProductsByCategory(categoryId: number) {
+export async function getProductsByCategory(categoryId: string) {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(products).where(eq(products.categoryId, categoryId)).orderBy(desc(products.createdAt));
@@ -340,7 +341,7 @@ export async function getAllCategories() {
   return db.select().from(categories).orderBy(desc(categories.createdAt));
 }
 
-export async function getCategoryById(id: number) {
+export async function getCategoryById(id: string) {
   const db = await getDb();
   if (!db) return undefined;
   const result = await db.select().from(categories).where(eq(categories.id, id)).limit(1);
@@ -353,6 +354,7 @@ export async function createCategory(data: InsertCategory) {
   
   // Use explicit values and avoid 'any' to ensure Drizzle handles ID correctly
   return db.insert(categories).values({
+    id: nanoid(),
     name: data.name || "",
     slug: data.slug || "",
     icon: data.icon || null,
@@ -362,7 +364,7 @@ export async function createCategory(data: InsertCategory) {
   });
 }
 
-export async function updateCategory(id: number, data: Partial<InsertCategory>) {
+export async function updateCategory(id: string, data: Partial<InsertCategory>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   return db.update(categories).set({
@@ -371,7 +373,7 @@ export async function updateCategory(id: number, data: Partial<InsertCategory>) 
   }).where(eq(categories.id, id));
 }
 
-export async function deleteCategory(id: number) {
+export async function deleteCategory(id: string) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   return db.delete(categories).where(eq(categories.id, id));
