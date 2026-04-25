@@ -163,10 +163,11 @@ export default function ProductDetail() {
               </div>
 
               {/* Trust badges below image */}
-              <div className="grid grid-cols-3 gap-3 mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
                 <TrustItem icon={ShieldCheck} title="Гарантия" subtitle="12 мес." />
                 <TrustItem icon={Truck} title="Доставка" subtitle="по РК" />
-                <TrustItem icon={CreditCard} title="Kaspi" subtitle="0-0-24" />
+                <TrustItem icon={CreditCard} title="Рассрочка" subtitle="0-0-12" />
+                <TrustItem icon={CreditCard} title="Рассрочка" subtitle="0-0-24" />
               </div>
             </motion.div>
 
@@ -224,11 +225,19 @@ export default function ProductDetail() {
                       </span>
                     </p>
                   )}
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <p className="text-xs text-muted-foreground mb-1">Через Kaspi Red 0-0-24:</p>
-                    <p className="text-lg font-bold text-foreground">
-                      {Math.round(finalPrice / 24).toLocaleString()} ₸/мес.
-                    </p>
+                  <div className="mt-4 pt-4 border-t border-border grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Рассрочка 0-0-12</p>
+                      <p className="text-lg font-black text-foreground">
+                        {Math.round(finalPrice / 12).toLocaleString()} <span className="text-xs font-bold text-muted-foreground">₸/мес</span>
+                      </p>
+                    </div>
+                    <div className="space-y-1 border-l border-border pl-4">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Рассрочка 0-0-24</p>
+                      <p className="text-lg font-black text-emerald-500">
+                        {Math.round(finalPrice / 24).toLocaleString()} <span className="text-xs font-bold text-emerald-500/70">₸/мес</span>
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

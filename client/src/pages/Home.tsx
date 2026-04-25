@@ -36,7 +36,7 @@ const TikTokIcon = ({ className }: { className?: string }) => (
 const FAQ = [
   {
     q: "Есть ли рассрочка?",
-    a: "Да, вы можете приобрести любой товар в рассрочку 0-0-24 через Kaspi Red, Kaspi Bank и Halyk Bank без переплат."
+    a: "Да, вы можете приобрести любой товар в рассрочку 0-0-12 и 0-0-24 через Kaspi Red, Kaspi Bank и Halyk Bank без переплат."
   },
   {
     q: "Какая гарантия на технику?",
@@ -202,7 +202,7 @@ export default function Home() {
             className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto"
           >
             Поможем выбрать идеальное устройство под ваши задачи и бюджет.
-            Рассрочка 0-0-24 через Kaspi. Доставка по всему Казахстану.
+            Рассрочка 0-0-12 и 0-0-24 через Kaspi. Доставка по всему Казахстану.
           </motion.p>
 
           <motion.div
