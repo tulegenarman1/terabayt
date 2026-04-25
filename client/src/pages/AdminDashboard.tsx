@@ -631,16 +631,16 @@ function StatCard({ label, value, icon: Icon, accent }: { label: string; value: 
 
 const inputClass = "bg-card border-border text-foreground placeholder:text-muted-foreground focus-visible:border-emerald-500 focus-visible:ring-emerald-500/20";
 
-function SpecInput({ label, name, value, onChange, options }: { 
+function SpecInput({ label, name, value, onChange, options = [] }: { 
   label: string; 
   name: string; 
   value?: string; 
   onChange: (name: string, value: string) => void; 
-  options: string[] 
+  options?: string[] 
 }) {
   const [isOpen, setIsOpen] = useState(false);
   
-  const filteredOptions = options.filter(opt => 
+  const filteredOptions = (options || []).filter(opt => 
     opt.toLowerCase().includes((value || "").toLowerCase())
   );
 
@@ -751,7 +751,10 @@ function ProductForm({
   const { data: brands = [] } = trpc.brands.list.useQuery();
   const scrapeKaspiMutation = trpc.admin.scrapeKaspiImage.useMutation();
 
-  const getSelectedCategory = () => categories.find(c => c.id === formData.categoryId);
+  const getSelectedCategory = () => {
+    const selected = categories.find(c => String(c.id) === String(formData.categoryId));
+    return selected;
+  };
 
   const handleKaspiLinkChange = (url: string) => {
     setFormData(prev => ({ ...prev, kaspiLink: url }));
@@ -1216,19 +1219,70 @@ function ProductForm({
                 options={["A4", "A3", "A4, A5, B5", "10x15 см", "A6"]}
               />
             </>
-          ) : (
-            <div className="col-span-2">
-              <p className="text-xs text-muted-foreground mb-2 italic text-center">Используйте общее описание или добавьте характеристики вручную.</p>
-            </div>
-          )}
+          ) : (() => {
+            const cat = getSelectedCategory();
+            const catName = (cat?.name || "").toLowerCase();
+            const catSlug = (cat?.slug || "").toLowerCase();
+            
+            const isPhone = catSlug.includes("phone") || catName.includes("телефон") || catName.includes("смартфон") || catName.includes("связь");
+            const isPrinter = catSlug.includes("printer") || catName.includes("принтер") || catName.includes("печать") || catName.includes("мфу");
+            
+            if (isPhone) {
+              return (
+                <div className="col-span-2 space-y-4">
+                  <p className="text-xs text-muted-foreground mb-2 italic text-center">Основные характеристики (Смартфон):</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <SpecInput label="Цвет" name="color" value={formData.specs.color} onChange={handleSpecChange} />
+                    <SpecInput label="Встроенная память" name="storage" value={formData.specs.storage} onChange={handleSpecChange} />
+                    <SpecInput label="Оперативная память" name="ram" value={formData.specs.ram} onChange={handleSpecChange} />
+                    <SpecInput label="Процессор" name="cpu" value={formData.specs.cpu} onChange={handleSpecChange} />
+                    <SpecInput label="ОС" name="os" value={formData.specs.os} onChange={handleSpecChange} />
+                    <SpecInput label="Камера" name="camera" value={formData.specs.camera} onChange={handleSpecChange} />
+                    <SpecInput label="Экран" name="display" value={formData.specs.display} onChange={handleSpecChange} />
+                    <SpecInput label="Батарея" name="battery" value={formData.specs.battery} onChange={handleSpecChange} />
+                  </div>
+                </div>
+              );
+            }
+            
+            if (isPrinter) {
+              return (
+                <div className="col-span-2 space-y-4">
+                  <p className="text-xs text-muted-foreground mb-2 italic text-center">Основные характеристики (Принтер):</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <SpecInput label="Тип принтера" name="type" value={formData.specs.type} onChange={handleSpecChange} />
+                    <SpecInput label="Цветность" name="color" value={formData.specs.color} onChange={handleSpecChange} />
+                    <SpecInput label="Скорость печати" name="speed" value={formData.specs.speed} onChange={handleSpecChange} />
+                    <SpecInput label="Интерфейс" name="interface" value={formData.specs.interface} onChange={handleSpecChange} />
+                    <SpecInput label="Формат печати" name="format" value={formData.specs.format} onChange={handleSpecChange} />
+                    <SpecInput label="Сканер" name="scanner" value={formData.specs.scanner} onChange={handleSpecChange} />
+                  </div>
+                </div>
+              );
+            }
+            
+            return (
+              <div className="col-span-2 space-y-4">
+                <p className="text-xs text-muted-foreground mb-2 italic text-center">Основные характеристики:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <SpecInput label="Процессор" name="cpu" value={formData.specs.cpu} onChange={handleSpecChange} />
+                  <SpecInput label="Оперативная память" name="ram" value={formData.specs.ram} onChange={handleSpecChange} />
+                  <SpecInput label="Накопитель" name="storage" value={formData.specs.storage} onChange={handleSpecChange} />
+                  <SpecInput label="Видеокарта" name="gpu" value={formData.specs.gpu} onChange={handleSpecChange} />
+                  <SpecInput label="Экран" name="display" value={formData.specs.display} onChange={handleSpecChange} />
+                  <SpecInput label="ОС" name="os" value={formData.specs.os} onChange={handleSpecChange} />
+                </div>
+              </div>
+            );
+          })()}
 
-          <div className="col-span-2 flex justify-center pb-2">
+          <div className="col-span-2 flex flex-col items-center gap-3 pb-2 pt-4 border-t border-border/50 mt-4">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => {
-                const key = prompt("Название характеристики (например, 'Материал' или 'Вес'):");
+                const key = prompt("Название характеристики (например, 'Материал' или 'Гарантия'):");
                 if (key) {
                   setFormData({
                     ...formData,
@@ -1236,21 +1290,57 @@ function ProductForm({
                   });
                 }
               }}
-              className="border-border bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 border-dashed"
+              className="border-dashed border-emerald-500/30 bg-emerald-500/5 text-emerald-400 hover:bg-emerald-500/10 h-10 text-[10px] uppercase font-bold w-full"
             >
               <Plus className="w-3.5 h-3.5 mr-2" />
-              Добавить свою характеристику
+              Добавить свое поле
             </Button>
           </div>
           
-          {/* Custom specs that might have been added */}
+          {/* Custom or manually added specs */}
           {Object.entries(formData.specs).map(([key, value]) => {
-            const standardKeys = ["cpu", "ram", "storage", "gpu", "display", "os", "type", "color", "speed", "interface", "camera", "battery", "sim", "nfc", "format"];
-            if (standardKeys.includes(key)) return null;
+            const cat = getSelectedCategory();
+            const isLaptop = cat?.slug.includes("laptop") || cat?.name.toLowerCase().includes("ноутбук");
+            const isPhone = cat?.slug.includes("phone") || cat?.name.toLowerCase().includes("телефон");
+            const isPrinter = cat?.slug.includes("printer") || cat?.name.toLowerCase().includes("принтер");
+            const isOther = !isLaptop && !isPhone && !isPrinter;
+
+            // Define what fields are "template" fields for each category
+            const laptopFields = ["cpu", "ram", "storage", "gpu", "display", "os", "battery", "weight"];
+            const phoneFields = ["cpu", "ram", "storage", "display", "os", "color", "camera", "battery", "sim", "nfc"];
+            const printerFields = ["type", "color", "speed", "scanner", "interface", "format"];
+            const otherDefaultFields = ["display", "cpu", "ram", "storage", "gpu", "os"];
+
+            // Skip rendering if it's already in the main template section
+            if (isLaptop && laptopFields.includes(key)) return null;
+            if (isPhone && phoneFields.includes(key)) return null;
+            if (isPrinter && printerFields.includes(key)) return null;
+            if (isOther && otherDefaultFields.includes(key)) return null;
+
+            const labels: Record<string, string> = {
+              cpu: "Процессор",
+              ram: "ОЗУ",
+              storage: "Память",
+              gpu: "Видеокарта",
+              display: "Экран",
+              os: "ОС",
+              battery: "Батарея",
+              weight: "Вес",
+              camera: "Камера",
+              sim: "SIM",
+              nfc: "NFC",
+              type: "Тип",
+              color: "Цвет",
+              speed: "Скорость",
+              scanner: "Сканер",
+              interface: "Интерфейс",
+              format: "Формат"
+            };
+
             return (
               <div key={key}>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider flex justify-between">
-                  {key}
+                  {labels[key] || key}
                   <button 
                     type="button" 
                     onClick={() => {
