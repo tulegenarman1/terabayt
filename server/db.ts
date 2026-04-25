@@ -362,7 +362,10 @@ export async function createCategory(data: InsertCategory) {
 export async function updateCategory(id: number, data: Partial<InsertCategory>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  return db.update(categories).set(data).where(eq(categories.id, id));
+  return db.update(categories).set({
+    ...data,
+    updatedAt: new Date(),
+  }).where(eq(categories.id, id));
 }
 
 export async function deleteCategory(id: number) {
