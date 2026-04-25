@@ -17,7 +17,7 @@ export default function AIChatBot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Привет! Я BAYTBOT — ИИ-помощник Terabayt.kz. Помогу вам подобрать идеальную электронику или компьютерную технику. Что именно вы ищете?",
+      content: "Привет! Я TERABOT — ИИ-помощник Terabayt.kz. Помогу вам подобрать идеальную электронику или компьютерную технику. Что именно вы ищете?",
     },
   ]);
 
@@ -143,7 +143,7 @@ export default function AIChatBot() {
                   <Bot className="w-5 h-5 text-black" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-foreground">BAYTBOT</h3>
+                  <h3 className="font-bold text-sm text-foreground">TERABOT</h3>
                   <p className="text-[10px] text-emerald-500 font-medium uppercase tracking-wider">Terabayt.kz Online</p>
                 </div>
               </div>
@@ -182,7 +182,7 @@ export default function AIChatBot() {
                           <Bot className="w-3 h-3" />
                         )}
                         <span className="text-[10px] uppercase font-bold tracking-tighter">
-                          {msg.role === "user" ? "Вы" : "BAYTBOT"}
+                          {msg.role === "user" ? "Вы" : "TERABOT"}
                         </span>
                       </div>
                       <div className="whitespace-pre-wrap leading-relaxed">{msg.content}</div>

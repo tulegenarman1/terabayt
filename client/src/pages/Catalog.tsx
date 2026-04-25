@@ -282,7 +282,7 @@ export default function Catalog() {
                       onClick={() => setSelectedBrand(brand.name)}
                       className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-6 md:p-8 transition-all flex flex-col items-center text-center relative overflow-hidden"
                     >
-                      <div className="w-full aspect-square bg-muted/50 rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
+                      <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
                         {brand.logo ? (
                           <img 
                             src={brand.logo} 
@@ -323,7 +323,7 @@ export default function Catalog() {
                       onClick={() => setSelectedModel(modelName)}
                       className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-6 md:p-8 transition-all flex flex-col items-center text-center relative overflow-hidden"
                     >
-                      <div className="w-full aspect-square bg-muted/50 rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
+                      <div className="w-full aspect-square bg-white rounded-xl flex items-center justify-center mb-4 p-4 group-hover:scale-105 transition-transform overflow-hidden">
                         {representativeImage ? (
                           <img 
                             src={representativeImage} 
@@ -371,7 +371,7 @@ function ProductCard({ product, onClick }: { product: any; onClick: () => void }
       onClick={onClick}
       className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-5 transition-all cursor-pointer relative"
     >
-      <div className="aspect-[4/3] w-full bg-white dark:bg-black rounded-xl mb-4 flex items-center justify-center overflow-hidden group-hover:scale-[1.05] transition-transform duration-300">
+      <div className="aspect-[4/3] w-full bg-white rounded-xl mb-4 flex items-center justify-center overflow-hidden group-hover:scale-[1.05] transition-transform duration-300">
         {product.images?.[0] ? (
           <img 
             src={product.images[0]} 

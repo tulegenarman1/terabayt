@@ -207,6 +207,86 @@ export const appRouter = router({
           });
         }
       }),
+
+    scrapeKaspiDetails: adminProcedure
+      .input(z.object({ url: z.string().url() }))
+      .mutation(async ({ input }) => {
+        try {
+          const response = await axios.get(input.url, {
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            },
+            timeout: 7000
+          });
+
+          const html = response.data;
+          
+          // 1. Extract Name
+          const titleMatch = html.match(/<h1[^>]*class=["']item__card-title["'][^>]*>([\s\S]*?)<\/h1>/i) ||
+                             html.match(/<meta[^>]*property=["']og:title["'][^>]*content=["']([^"']+)["']/i);
+          let name = titleMatch ? titleMatch[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"').trim() : "";
+          
+          // 2. Extract Price
+          const priceMatch = html.match(/["']price["']\s*:\s*(\d+)/i) || 
+                             html.match(/class=["']item__price-now["'][^>]*>([\s\S]*?)<\/div>/i);
+          let price = "";
+          if (priceMatch) {
+            price = priceMatch[1].replace(/[^\d]/g, '');
+          }
+
+          // 3. Extract Specs
+          const specs: Record<string, string> = {};
+          
+          // Helper to find spec by common keywords
+          const findSpec = (keywords: string[]) => {
+            for (const kw of keywords) {
+              const regex = new RegExp(`${kw}[:\s]*<\/span>[\s\S]*?<dd[^>]*>([\s\S]*?)<\/dd>`, 'i');
+              const match = html.match(regex);
+              if (match) return match[1].replace(/<[^>]*>/g, '').trim();
+            }
+            return "";
+          };
+
+          // Broad spec parsing
+          const specItemRegex = /<dl[^>]*class=["']specifications-list__spec["'][^>]*>[\s\S]*?<dt[^>]*>([\s\S]*?)<\/dt>[\s\S]*?<dd[^>]*>([\s\S]*?)<\/dd>/gi;
+          let match;
+          while ((match = specItemRegex.exec(html)) !== null) {
+            const key = match[1].replace(/<[^>]*>/g, '').trim().toLowerCase();
+            const val = match[2].replace(/<[^>]*>/g, '').trim();
+            
+            if (key.includes("процессор") || key.includes("cpu")) specs.cpu = val;
+            else if (key.includes("оперативная память") || key.includes("ram")) specs.ram = val;
+            else if (key.includes("накопитель") || key.includes("ssd") || key.includes("hdd")) specs.storage = val;
+            else if (key.includes("видеокарта") || key.includes("gpu")) specs.gpu = val;
+            else if (key.includes("экран") || key.includes("диагональ")) specs.display = val;
+            else if (key.includes("операционная система") || key.includes("ось")) specs.os = val;
+          }
+
+          // 4. Extract Brand (usually from breadcrumbs or title)
+          let brand = "";
+          const brandMatch = name.match(/^(apple|asus|hp|lenovo|acer|msi|dell|huawei|samsung|honor)/i);
+          if (brandMatch) brand = brandMatch[1];
+
+          // 5. Image (use existing logic or just return URL for frontend to handle)
+          let imageUrl = "";
+          const ogImageMatch = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i);
+          if (ogImageMatch) imageUrl = ogImageMatch[1];
+
+          return { 
+            name, 
+            price, 
+            specs, 
+            brand,
+            imageUrl
+          };
+        } catch (error) {
+          console.error("[Scrape Details Error]", error);
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Не удалось получить данные о товаре. Проверьте ссылку."
+          });
+        }
+      }),
   }),
 
   // Brands
@@ -515,10 +595,9 @@ export const appRouter = router({
 
           if (abTestGroup === "optimized") {
             if (isSimpleScenario || isHighConfidence) {
-              aiUsed = false;
+              aiUsed = true; // Still use AI for "normal" feeling answers
               reason = isSimpleScenario ? "simple_scenario" : "high_confidence";
-              finalResponse = `Лучший вариант для вас — ${top1.name} (${top1.price} ₸). Это наиболее подходящий товар под ваш бюджет и задачи.`;
-              savings = 1;
+              savings = 0.5; // Partial savings logic if needed, but we want quality
             } else {
               aiUsed = true;
               reason = "low_confidence";
@@ -531,14 +610,52 @@ export const appRouter = router({
           if (aiUsed) {
             const productsContext = limitedProducts.map(p => {
               const specs = p.specs ? (typeof p.specs === 'string' ? JSON.parse(p.specs) : p.specs) : {};
-              return { n: p.name, p: p.price, s: Object.values(specs).slice(0, 1).join("") }; // Minimized data
+              const specsStr = Object.entries(specs).map(([k, v]) => `${k}: ${v}`).join(", ");
+              return { 
+                name: p.name, 
+                price: p.price, 
+                specs: specsStr,
+                available: p.availability === "in_stock" ? "В наличии" : "Под заказ"
+              };
             });
 
-            const systemPrompt = `Ты эксперт. Выбери 1 лучший. Не придумывай. Ответ: 1 короткое предложение. ТОВАРЫ: ${JSON.stringify(productsContext)}`;
+            const shopInfo = `
+Магазин: Terabayt.kz
+Доставка: По Алматы день в день, по Казахстану 2-5 дней (надежные курьерские службы).
+Гарантия: Официальная гарантия 12 месяцев на всю технику.
+Рассрочка: 0-0-24 через Kaspi Red, Kaspi Bank и Halyk Bank без переплат.
+Бонус: При покупке ноутбука/компьютера - бесплатная установка Windows, драйверов и Office (базовый пакет программ) в подарок.
+Адреса: 
+● Алматы: ул. Сауранбаева, 5
+● Шымкент (Аксу): ул. Абылай Хана, 58А
+Контакты: +7 707 200 22 25 (WhatsApp).
+Соцсети:
+● Instagram: @terabayt.kz_aksu
+● TikTok: @terabayt.kz
+Миссия: Качественная техника должна быть доступной. Помогаем найти надежного помощника для работы, творчества и развлечений.
+`;
+
+            const systemPrompt = `Ты — TERABOT, эксперт-консультант магазина электроники Terabayt.kz. 
+Твоя цель: помогать клиентам выбирать технику, отвечать логично, вежливо и профессионально.
+
+ПРАВИЛА:
+1. Используй предоставленный список ТОВАРОВ для рекомендаций.
+2. ВАЖНО: Используй символ ● для любых списков, перечислений или выделения товаров. НИКОГДА не используй символ * или дефис - для списков.
+3. ВАЖНО: Никогда не выводи ссылки (URL, http/https) в своем ответе. Используй только названия и текстовую информацию.
+4. Всегда добавляй символ ● перед названием любого ноутбука (например: ●Ноутбук HP...).
+4. Если в списке есть подходящий товар, кратко объясни, почему он подходит (по характеристикам).
+5. Если товара нет в наличии, так и скажи, предложи вариант "под заказ".
+6. Используй ИНФОРМАЦИЮ О МАГАЗИНЕ для ответов на вопросы о доставке, гарантии или адресах.
+7. Пиши живым, человеческим языком. Не будь роботом.
+8. Ответ должен быть лаконичным (2-3 предложения), но информативным.
+
+ИНФОРМАЦИЯ О МАГАЗИНЕ: ${shopInfo}
+ТОВАРЫ: ${JSON.stringify(productsContext)}`;
+
             const response = await invokeLLM({
               messages: [
                 { role: "system", content: systemPrompt },
-                { role: "user", content: rawMessage }
+                ...input.messages.slice(-3) // Даем контекст последних 3 сообщений для логичности диалога
               ],
             });
             finalResponse = response.choices[0].message.content as string;
@@ -571,7 +688,7 @@ export const appRouter = router({
         } catch (error) {
           console.error("[AI Chat] Error:", error);
           if (limitedProducts.length > 0) {
-            return { message: `Вот подходящие варианты:\n${limitedProducts.map(p => `- ${p.name} (${p.price} ₸)`).join("\n")}` };
+            return { message: `Вот подходящие варианты:\n${limitedProducts.map(p => `● ${p.name} (${p.price} ₸)`).join("\n")}` };
           }
           if (error instanceof TRPCError) throw error;
           return { message: "Попробуйте позже." };

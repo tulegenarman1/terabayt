@@ -248,9 +248,9 @@ export default function Home() {
               className="flex p-1.5 bg-muted/50 backdrop-blur-md rounded-2xl border border-border"
             >
               {[
-                { id: "hits", label: "Хит", icon: Award },
-                { id: "new", label: "Новинки", icon: Sparkles },
-                { id: "sale", label: "Скидки", icon: Zap },
+                { id: "hits", label: "Хит" },
+                { id: "new", label: "Новинки" },
+                { id: "sale", label: "Скидки" },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -261,7 +261,6 @@ export default function Home() {
                       : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                   }`}
                 >
-                  <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? "text-black" : "text-emerald-400"}`} />
                   {tab.label}
                 </button>
               ))}
@@ -284,7 +283,7 @@ export default function Home() {
                   onClick={() => navigate(`/product/${product.id}`)}
                   className="group bg-card border border-border hover:border-emerald-500/50 rounded-3xl p-6 transition-all cursor-pointer relative overflow-hidden"
                 >
-                  <div className="aspect-[4/3] bg-white dark:bg-black rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-[1.05] transition-transform duration-300">
+                  <div className="aspect-[4/3] bg-white rounded-2xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-[1.05] transition-transform duration-300">
                     {product.images?.[0] ? (
                       <img 
                         src={product.images[0]} 

@@ -284,7 +284,7 @@ export default function AdminDashboard() {
                       <tr key={product.id} className="hover:bg-muted/30 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                            <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center overflow-hidden flex-shrink-0">
                               {product.images?.[0] ? (
                                 <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
                               ) : (
@@ -502,7 +502,7 @@ export default function AdminDashboard() {
                   key={brand.id}
                   className="bg-card border border-border hover:border-emerald-500/30 rounded-xl p-5 transition-all group flex flex-col items-center"
                 >
-                  <div className="w-20 h-20 rounded-xl bg-muted flex items-center justify-center mb-4 overflow-hidden p-2">
+                  <div className="w-20 h-20 rounded-xl bg-white flex items-center justify-center mb-4 overflow-hidden p-2">
                     {brand.logo ? (
                       <img src={brand.logo} alt={brand.name} className="max-w-full max-h-full object-contain" />
                     ) : (
@@ -740,7 +740,7 @@ function ProductForm({
   };
 
   const handleCropComplete = (croppedBlob: Blob) => {
-    const file = new File([croppedBlob], "product_image.jpg", { type: "image/jpeg" });
+    const file = new File([croppedBlob], "product_image.webp", { type: "image/webp" });
     setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -1156,7 +1156,7 @@ function ProductForm({
             <p className="text-xs text-muted-foreground mt-2">JPG, PNG, WebP до 2 МБ. Обрезка 4:3.</p>
           </div>
           {imagePreview && (
-            <div className="w-32 h-24 relative rounded-lg border border-border overflow-visible bg-muted">
+            <div className="w-32 h-24 relative rounded-lg border border-border overflow-visible bg-white">
               <img 
                 src={imagePreview} 
                 alt="Preview" 

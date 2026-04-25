@@ -26,7 +26,7 @@ cloudinary.config({
 // Multer Configuration
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
+  limits: { fileSize: 10 * 1024 * 1024 }, // Increase to 10MB for high-res images with transparency
   fileFilter: (_req, file, cb) => {
     const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
     if (allowedTypes.includes(file.mimetype)) {
@@ -90,20 +90,18 @@ async function startServer() {
         return res.status(400).json({ error: "No image file provided" });
       }
 
-      console.log("Processing image with sharp...");
-      // Sharp Processing - ensure transparency and high quality
+      // Sharp Processing - maintain original scale, high quality, and fill with white
       const processedBuffer = await sharp(req.file.buffer)
-        .ensureAlpha() // Ensure we have an alpha channel
+        .flatten({ background: { r: 255, g: 255, b: 255 } }) // Replace transparency with white
         .resize({
-          width: 800,
-          height: 600,
-          fit: "contain",
-          background: { r: 255, g: 255, b: 255, alpha: 0 } // Fully transparent
+          width: 2500, // Large limit to preserve scale
+          height: 2500,
+          fit: "inside", // Preserve original size if smaller than 2500, otherwise downscale to 2500
+          withoutEnlargement: true // Never make the image bigger (and thus blurrier)
         })
         .webp({ 
-          quality: 90,
-          lossless: false,
-          force: true 
+          quality: 90, // Higher quality
+          effort: 6 // Better compression
         })
         .toBuffer();
 
