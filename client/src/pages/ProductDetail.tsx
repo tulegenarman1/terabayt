@@ -16,6 +16,7 @@ export default function ProductDetail() {
   const { theme, toggleTheme } = useTheme();
 
   const { data: product, isLoading } = trpc.products.getById.useQuery(parseInt(id || "0"));
+  const { data: categories = [] } = trpc.categories.list.useQuery();
 
   if (isLoading) {
     return (
@@ -47,6 +48,8 @@ export default function ProductDetail() {
   const discountPercent = oldPrice
     ? Math.round((1 - finalPrice / oldPrice) * 100)
     : 0;
+
+  const category = categories.find(c => c.id === product.categoryId);
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
@@ -121,6 +124,17 @@ export default function ProductDetail() {
             >
               Каталог
             </button>
+            {category && (
+              <>
+                <ChevronRight className="w-3.5 h-3.5" />
+                <button
+                  onClick={() => navigate(`/catalog?category=${category.id}`)}
+                  className="hover:text-emerald-400 transition-colors uppercase"
+                >
+                  {category.name}
+                </button>
+              </>
+            )}
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-emerald-400 font-medium truncate max-w-[200px]">
               {product.brand}
@@ -128,11 +142,11 @@ export default function ProductDetail() {
           </div>
 
           <button
-            onClick={() => navigate("/catalog")}
+            onClick={() => navigate(`/catalog?category=${product.categoryId}&brand=${product.brand}`)}
             className="inline-flex items-center gap-2 text-muted-foreground hover:text-emerald-400 transition-colors mb-6 text-sm"
           >
             <ArrowLeft className="w-4 h-4" />
-            Назад в каталог
+            Назад в каталог {category?.name} {product.brand}
           </button>
 
           {/* Product Layout */}

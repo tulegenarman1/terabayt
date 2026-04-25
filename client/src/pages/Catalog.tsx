@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useLocation } from "wouter";
+import { useState, useMemo, useEffect } from "react";
+import { useLocation, useSearch } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -23,10 +23,30 @@ const categoryIcons: Record<string, any> = {
 
 export default function Catalog() {
   const [, navigate] = useLocation();
+  const searchString = useSearch();
   const { theme, toggleTheme } = useTheme();
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
+
+  const queryParams = useMemo(() => new URLSearchParams(searchString), [searchString]);
+  
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(
+    queryParams.get("category") ? parseInt(queryParams.get("category")!) : null
+  );
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(
+    queryParams.get("brand") || null
+  );
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Sync URL with state
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedCategory) params.set("category", selectedCategory.toString());
+    if (selectedBrand) params.set("brand", selectedBrand);
+    
+    const newSearch = params.toString();
+    if (newSearch !== searchString) {
+      navigate(`/catalog?${newSearch}`, { replace: true });
+    }
+  }, [selectedCategory, selectedBrand, navigate, searchString]);
 
   const { data: products = [], isLoading } = trpc.products.list.useQuery();
   const { data: categories = [] } = trpc.categories.list.useQuery();
