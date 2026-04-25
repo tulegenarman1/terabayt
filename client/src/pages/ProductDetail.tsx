@@ -321,6 +321,7 @@ export default function ProductDetail() {
               <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xl shadow-black/5">
                 <div className="divide-y divide-border">
                   {product.specs && typeof product.specs === 'object' && Object.entries(product.specs)
+                    .filter(([_, value]) => value && String(value).trim() !== "")
                     .sort(([a], [b]) => {
                       const order = ["display", "cpu", "gpu", "storage", "ram", "os", "camera", "battery", "weight", "sim", "nfc", "type", "speed", "scanner", "interface", "format", "color"];
                       const indexA = order.indexOf(a);
