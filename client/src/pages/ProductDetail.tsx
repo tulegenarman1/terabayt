@@ -49,7 +49,7 @@ export default function ProductDetail() {
     ? Math.round((1 - finalPrice / oldPrice) * 100)
     : 0;
 
-  const category = categories.find(c => c.id === product.categoryId);
+  const category = categories.find(c => String(c.id) === String(product.categoryId));
 
   return (
     <div className="min-h-screen bg-background text-foreground transition-colors duration-300">

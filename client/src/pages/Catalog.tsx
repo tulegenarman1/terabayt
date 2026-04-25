@@ -63,14 +63,15 @@ export default function Catalog() {
   const { data: brandsList = [] } = trpc.brands.list.useQuery();
 
   const currentCategoryName = useMemo(() => {
-    return categories.find(c => c.id === selectedCategory)?.name || "";
+    if (!selectedCategory) return "";
+    return categories.find(c => String(c.id) === String(selectedCategory))?.name || "";
   }, [categories, selectedCategory]);
 
   const brands = useMemo(() => {
     if (!selectedCategory) return [];
     const brandIds = new Set(
       products
-        .filter((p) => p.categoryId === selectedCategory)
+        .filter((p) => String(p.categoryId) === String(selectedCategory))
         .map((p) => p.brandId)
     );
     return brandsList.filter(b => brandIds.has(b.id));
@@ -78,7 +79,9 @@ export default function Catalog() {
 
   const filteredProducts = useMemo(() => {
     let filtered = products;
-    if (selectedCategory) filtered = filtered.filter((p) => p.categoryId === selectedCategory);
+    if (selectedCategory) {
+      filtered = filtered.filter((p) => String(p.categoryId) === String(selectedCategory));
+    }
     
     if (selectedBrand) {
       const selectedBrandObj = brandsList.find(b => b.name === selectedBrand);
@@ -235,11 +238,11 @@ export default function Catalog() {
               >
                 {categories.map((cat) => {
                   const Icon = categoryIconsMap[cat.icon || "Package"] || Package;
-                  const count = products.filter(p => p.categoryId === cat.id).length;
+                  const count = products.filter(p => String(p.categoryId) === String(cat.id)).length;
                   return (
                     <button
                       key={cat.id}
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => setSelectedCategory(String(cat.id))}
                       className="group bg-card border border-border hover:border-emerald-500/50 rounded-2xl p-8 transition-all text-left relative overflow-hidden"
                     >
                       <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">

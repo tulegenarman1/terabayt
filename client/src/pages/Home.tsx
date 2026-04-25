@@ -262,7 +262,7 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {categories.map((cat) => {
               const Icon = categoryIconsMap[cat.icon || "Package"] || Package;
-              const count = allProducts.filter(p => p.categoryId === cat.id).length;
+              const count = allProducts.filter(p => String(p.categoryId) === String(cat.id)).length;
               return (
                 <motion.button
                   key={cat.id}
