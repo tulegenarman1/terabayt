@@ -1073,6 +1073,20 @@ function ProductForm({
                 onChange={handleSpecChange}
                 options={["Windows 11 Home", "Windows 11 Pro", "macOS Sonoma", "Без ОС (FreeDOS)", "Ubuntu Linux"]}
               />
+              <SpecInput
+                label="Аккумулятор"
+                name="battery"
+                value={formData.specs.battery}
+                onChange={handleSpecChange}
+                options={["45 Вт·ч", "50 Вт·ч", "60 Вт·ч", "70 Вт·ч", "80 Вт·ч", "90+ Вт·ч"]}
+              />
+              <SpecInput
+                label="Вес"
+                name="weight"
+                value={formData.specs.weight}
+                onChange={handleSpecChange}
+                options={["1.2 кг", "1.4 кг", "1.6 кг", "1.8 кг", "2.1 кг", "2.4 кг"]}
+              />
             </>
           ) : getSelectedCategory()?.slug.includes("phone") || getSelectedCategory()?.name.toLowerCase().includes("телефон") || getSelectedCategory()?.name.toLowerCase().includes("смартфон") ? (
             <>
@@ -1110,6 +1124,13 @@ function ProductForm({
                   "6.1\" Super Retina XDR", "6.7\" Super Retina XDR", "6.1\" OLED 120Hz", "6.7\" AMOLED 120Hz",
                   "6.8\" Dynamic AMOLED 2X", "6.36\" OLED", "6.78\" AMOLED 144Hz"
                 ]}
+              />
+              <SpecInput
+                label="ОС"
+                name="os"
+                value={formData.specs.os}
+                onChange={handleSpecChange}
+                options={["iOS 17", "iOS 18", "Android 13", "Android 14", "Android 15"]}
               />
               <SpecInput
                 label="Цвет"
@@ -1172,6 +1193,13 @@ function ProductForm({
                 value={formData.specs.speed}
                 onChange={handleSpecChange}
                 options={["До 18 стр/мин", "20-25 стр/мин", "30-35 стр/мин", "40+ стр/мин"]}
+              />
+              <SpecInput
+                label="Разрешение сканера"
+                name="scanner"
+                value={formData.specs.scanner}
+                onChange={handleSpecChange}
+                options={["Нет сканера", "600x600 dpi", "1200x1200 dpi", "2400x2400 dpi"]}
               />
               <SpecInput
                 label="Интерфейс"
