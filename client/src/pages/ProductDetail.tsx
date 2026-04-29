@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useTheme } from "@/contexts/ThemeContext";
 
-const LOGO_URL = "/logo.jpeg";
+const LOGO_URL = "/logo.png";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();

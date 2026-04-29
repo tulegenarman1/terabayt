@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { Lock, User, ArrowLeft, ShieldCheck } from "lucide-react";
 
-const LOGO_URL = "/logo.jpeg";
+const LOGO_URL = "/logo.png";
 
 export default function AdminLogin() {
   const [, navigate] = useLocation();

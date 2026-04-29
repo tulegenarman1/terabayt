@@ -44,7 +44,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { toast } from "sonner";
 import ImageEditor from "@/components/ImageEditor";
 
-const LOGO_URL = "/logo.jpeg";
+const LOGO_URL = "/logo.png";
 type Tab = "products" | "categories" | "brands";
 
 export default function AdminDashboard() {

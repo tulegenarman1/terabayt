@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useTheme } from "@/contexts/ThemeContext";
 
-const LOGO_URL = "/logo.jpeg";
+const LOGO_URL = "/logo.png";
 
 const brandLogos: Record<string, string> = {};
 
